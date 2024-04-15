@@ -69,6 +69,7 @@ int main() {
         }
     }
     std::clog<<"\rDone.        \n";
+
     file.close();
     return 0;
 }
