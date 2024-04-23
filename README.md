@@ -1,14 +1,14 @@
- # Proyecto de Computacion Grafica
+ # Proyecto de Computación Gráfica
   <p align="center">
   <img src="https://github.com/artrivas/ray-tracer/blob/main/images/caratula.png" width="60%">
   </p>
   
- ## Introduccion
+ ## Introducción
   
-El ray tracing, una técnica de renderización avanzada, nos permite recrear imágenes digitales que rivalizan con la realidad. Este proyecto explora los fundamentos y aplicaciones del ray tracing, desde la física de la luz hasta su implementación práctica en campos como el diseño, el cine y los videojuegos. Este estudio comparativo explora las diferencias entre ambos enfoques, analizando aspectos como la calidad visual y la eficiencia computacional. 
- 
+El ray tracing, una técnica de renderización avanzada, nos permite recrear imágenes digitales que rivalizan con la realidad. Este proyecto explora los fundamentos y aplicaciones del ray tracing, desde la física de la luz hasta su implementación práctica en campos como el diseño, el cine y los videojuegos. Este estudio comparativo explora las diferencias entre ambos enfoques, analizando aspectos como la calidad visual y la eficiencia computacional.
+
  ### Objetivo del proyecto
- El objetivo del proyecto es realizar comparaciones entre un sistema de renderizado estandar y uno con ray tracing. Por lo cual, a manera de uso eficiente se usara el lenguaje de programacion C++ y tal vez en un futuro una migracion a CUDA.
+El objetivo del proyecto es realizar comparaciones entre un sistema de renderizado estándar y uno con ray tracing. Por lo cual, a manera de uso eficiente se usará el lenguaje de programación C++ y tal vez en un futuro una migración a CUDA.
 
 # Integrantes
 <table>
