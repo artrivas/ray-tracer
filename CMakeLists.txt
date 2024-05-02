@@ -6,4 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(raytracing_weekend src/main.cpp
         src/vec3/vec3.h
         src/color/color.h
-        src/ray/ray.h)
+        src/ray/ray.h
+        src/hittable/hitabble.h
+        src/sphere/Sphere.h)
