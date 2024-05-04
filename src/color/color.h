@@ -5,9 +5,7 @@
 #ifndef RAYTRACING_WEEKEND_COLOR_H
 #define RAYTRACING_WEEKEND_COLOR_H
 
-#include "../vec3/vec3.h"
-
-#include <iostream>
+#include "../rtweekend.h"
 
 using color = vec3;
 

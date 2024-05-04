@@ -8,4 +8,6 @@ add_executable(raytracing_weekend src/main.cpp
         src/color/color.h
         src/ray/ray.h
         src/hittable/hitabble.h
-        src/sphere/Sphere.h)
+        src/sphere/sphere.h
+        src/hittable/hittable_list.h
+        src/rtweekend.h)

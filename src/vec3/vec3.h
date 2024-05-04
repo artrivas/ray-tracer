@@ -5,8 +5,7 @@
 #ifndef RAYTRACING_WEEKEND_VEC3_H
 #define RAYTRACING_WEEKEND_VEC3_H
 
-#include <cmath>
-#include <iostream>
+#include "../rtweekend.h"
 
 class vec3 {
 public:

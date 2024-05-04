@@ -6,7 +6,7 @@
 #define RAYTRACING_WEEKEND_SPHERE_H
 
 #include "../hittable/hitabble.h"
-#include "../vec3//vec3.h"
+#include "../rtweekend.h"
 
 class sphere: public hittable {
 private:
@@ -39,7 +39,8 @@ public:
 
         rec.t = root;
         rec.p = r.at(rec.t);
-        rec.normal = (rec.p - center) / radius;
+        vec3 outward_normal = (rec.p - center) / radius;
+        rec.set_face_normal(r, outward_normal);
 
         return true;
     }
