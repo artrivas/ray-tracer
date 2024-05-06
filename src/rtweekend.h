@@ -30,6 +30,7 @@ inline double degrees_to_radians(double degrees) {
 // Common Headers
 #include "vec3/vec3.h"
 #include "color/color.h"
+#include "interval/interval.h"
 #include "ray/ray.h"
 
 
