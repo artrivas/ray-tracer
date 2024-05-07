@@ -8,10 +8,10 @@ add_executable(raytracing_weekend src/main.cpp
         src/color/color.h
         src/ray/ray.h
         src/hittable/hitabble.h
-        src/sphere/sphere.h
+        src/primitives/sphere.h
         src/hittable/hittable_list.h
         src/rtweekend.h
         src/interval/interval.h
         src/camera/camera.h
-        src/mesh/mesh.h
-        src/triangle/triangle.h)
+        src/primitives/mesh.h
+        src/primitives/triangle.h)

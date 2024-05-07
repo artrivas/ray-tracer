@@ -9,18 +9,17 @@
 #include "../rtweekend.h"
 #include <initializer_list>
 
-class triangle: public hittable {
+class triangle : public hittable {
 private:
     point3 vertexes[3];
 public:
-    triangle(const point3& vertex1, const point3& vertex2, const point3& vertex3) {
+    triangle(const point3 &vertex1, const point3 &vertex2, const point3 &vertex3) {
         this->vertexes[0] = vertex1;
         this->vertexes[1] = vertex2;
         this->vertexes[2] = vertex3;
     };
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
-        // TODO
+    bool hit(const ray &r, interval ray_t, hit_record &rec) const override {
         return false;
     }
 };

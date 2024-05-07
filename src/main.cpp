@@ -2,7 +2,7 @@
 
 #include "camera/camera.h"
 #include "hittable/hittable_list.h"
-#include "sphere/sphere.h"
+#include "primitives/sphere.h"
 
 int main() {
     // World

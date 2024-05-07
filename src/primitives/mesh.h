@@ -7,7 +7,7 @@
 
 #include "../hittable/hitabble.h"
 #include "../rtweekend.h"
-#include "../triangle/triangle.h"
+#include "triangle.h"
 #include <vector>
 
 class mesh: public hittable {
