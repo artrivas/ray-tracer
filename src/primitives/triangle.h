@@ -44,6 +44,8 @@ public:
         if (t > e and ray_t.contains(t)) {
             rec.t = t;
             rec.p = r.at(t);
+            vec3 outward_normal = (rec.p);
+            rec.set_face_normal(r, outward_normal);
             return true;
         } else return false;
     }

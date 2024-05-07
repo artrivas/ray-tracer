@@ -10,7 +10,11 @@ int main() {
     hittable_list world;
 
     world.add(make_shared<sphere>(point3(0,0,-1),0.5));
-    world.add(make_shared<triangle>(point3(-0.5, -0.5, -0.5), point3(0.5, -0.5, -0.5), point3(0, 1, -0.5)));
+    world.add(make_shared<triangle>(point3(-0.5, -0.5, -0.6), point3(0.5, -0.5, -0.6), point3(0, 1, -0.6)));
+
+    //    world.add(make_shared<triangle>(point3(-1, 0, -0.5), point3(1, 0, -0.5), point3(0, 2, -2)));
+//    world.add(make_shared<triangle>(point3(-1, 0, -1), point3(1, 0, -1), point3(0, 2, -1)));
+
     world.add(make_shared<sphere>(point3(0,-100.5,-1),100));
     // Camera
     camera cam;
