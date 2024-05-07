@@ -6,6 +6,7 @@
 #define RAYTRACING_WEEKEND_COLOR_H
 
 #include "../rtweekend.h"
+#include "../interval/interval.h"
 
 using color = vec3;
 
