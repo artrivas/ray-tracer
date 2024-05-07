@@ -1,4 +1,3 @@
-#include <fstream>
 #include "rtweekend.h"
 
 #include "camera/camera.h"
