@@ -12,4 +12,6 @@ add_executable(raytracing_weekend src/main.cpp
         src/hittable/hittable_list.h
         src/rtweekend.h
         src/interval/interval.h
-        src/camera/camera.h)
+        src/camera/camera.h
+        src/mesh/mesh.h
+        src/triangle/triangle.h)
