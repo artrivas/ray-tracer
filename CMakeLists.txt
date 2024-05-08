@@ -14,4 +14,5 @@ add_executable(raytracing_weekend src/main.cpp
         src/interval/interval.h
         src/camera/camera.h
         src/primitives/mesh.h
-        src/primitives/triangle.h)
+        src/primitives/triangle.h
+        src/material/material.h)
