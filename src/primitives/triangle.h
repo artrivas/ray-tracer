@@ -15,10 +15,10 @@ private:
     shared_ptr<material> mat;
 public:
     triangle(const point3 &vertex1, const point3 &vertex2, const point3 &vertex3, shared_ptr<material> mat) {
+        this->mat = mat;
         this->vertexes[0] = vertex1;
         this->vertexes[1] = vertex2;
         this->vertexes[2] = vertex3;
-        this->mat = mat;
     };
 
     bool hit(const ray &r, interval ray_t, hit_record &rec) const override {
@@ -50,8 +50,7 @@ public:
             vec3 outward_normal = unit_vector(cross(edge1, edge2));
 
             rec.set_face_normal(r, outward_normal);
-            rec.mat = mat;
-
+            rec.mat = this->mat;
             return true;
         } else return false;
     }
