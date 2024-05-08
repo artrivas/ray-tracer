@@ -20,9 +20,10 @@ public:
     };
 
     bool hit(const ray &r, interval ray_t, hit_record &rec) const override {
+        vec3 dir = unit_vector(r.direction());
         vec3 edge1 = this->vertexes[1] - this->vertexes[0];
         vec3 edge2 = this->vertexes[2] - this->vertexes[0];
-        vec3 ray_cross = cross(r.direction(), edge2);
+        vec3 ray_cross = cross(dir, edge2);
 
         float det = dot(edge1, ray_cross);
 
@@ -35,17 +36,15 @@ public:
         if (u < 0 || u > 1) return false;
 
         vec3 s_cross_e1 = cross(s, edge1);
-        float v = inv_det * dot(r.direction(), s_cross_e1);
+        float v = inv_det * dot(dir, s_cross_e1);
 
         if (v < 0 || u + v > 1) return false;
 
         float t = inv_det * dot(edge2, s_cross_e1);
 
         if (t > e and ray_t.contains(t)) {
-            rec.t = t;
-            rec.p = r.at(t);
-            vec3 outward_normal = (rec.p);
-            rec.set_face_normal(r, outward_normal);
+            rec.t = t*(r.direction()[0]/dir[0]);
+            rec.p = r.origin() + t*dir;
             return true;
         } else return false;
     }
