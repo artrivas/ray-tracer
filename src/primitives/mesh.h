@@ -25,8 +25,9 @@ public:
     mesh() = default;
 
     bool hit(const ray &r, interval ray_t, hit_record &rec) const override {
+        hit_record temp_rec;
         bool intersects = false;
-
+        auto closest_so_far = ray_t.max;
         for (int i = 0; i < this->shapes[0].mesh.indices.size() / 3; i++) {
             const int &idx0 = shapes[0].mesh.indices.at(3 * i).vertex_index;
             const int &idx1 = shapes[0].mesh.indices.at(3 * i + 1).vertex_index;
@@ -41,8 +42,10 @@ public:
 
             const triangle t(vtx1, vtx2, vtx3, this->mat);
 
-            if (t.hit(r, ray_t, rec)) {
+            if (t.hit(r, interval(ray_t.min, closest_so_far), temp_rec)) {
                 intersects = true;
+                closest_so_far = temp_rec.t;
+                rec = temp_rec;
             }
         }
         return intersects;
