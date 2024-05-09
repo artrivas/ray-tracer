@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <omp.h>
+#include <vector>
 
 class camera {
 public:
@@ -26,7 +27,7 @@ public:
         // Render
         file << "P3\n" << image_width << ' '<< image_height<<"\n255\n";
 
-        vec3 image[image_height][image_width];
+        std::vector<std::vector<vec3>> image(image_height, std::vector<vec3>(image_width));
 
 #pragma omp parallel for collapse(2)
         for (int j = 0; j <image_height; ++j) {
