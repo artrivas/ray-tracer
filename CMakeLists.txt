@@ -3,8 +3,8 @@ project(raytracing_weekend)
 
 find_package(OpenMP REQUIRED)
 
-set(CMAKE_CXX_STANDARD 17)
-
+set(CMAKE_CXX_STANDARD 20)
+add_subdirectory(src/ext/bvh)
 add_executable(raytracing_weekend src/main.cpp
         src/vec3/vec3.h
         src/color/color.h
@@ -22,4 +22,4 @@ add_executable(raytracing_weekend src/main.cpp
 )
 
 target_compile_options(raytracing_weekend PRIVATE ${OpenMP_CXX_FLAGS})
-target_link_libraries(raytracing_weekend PRIVATE OpenMP::OpenMP_CXX)
+target_link_libraries(raytracing_weekend PRIVATE OpenMP::OpenMP_CXX bvh)
