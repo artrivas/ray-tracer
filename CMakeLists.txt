@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.28)
 project(raytracing_weekend)
 
 find_package(OpenMP REQUIRED)
@@ -20,6 +20,9 @@ add_executable(raytracing_weekend src/main.cpp
         src/material/material.h
         src/ext/tiny_obj_loader/tiny_obj_loader.h
 )
+
+target_link_libraries(raytracing_weekend PUBLIC stdc++)
+target_link_libraries(raytracing_weekend PUBLIC m)
 
 target_compile_options(raytracing_weekend PRIVATE ${OpenMP_CXX_FLAGS})
 target_link_libraries(raytracing_weekend PRIVATE OpenMP::OpenMP_CXX bvh)
