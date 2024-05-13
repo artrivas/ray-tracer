@@ -9,7 +9,7 @@
 int main() {
     // World
     hittable_list world;
-    auto t = mesh::build("../samples/airboat.obj", {1.5, 0, -7});
+    auto t = mesh::build("../samples/car/Car.obj", {0, -1, -3.5});
     auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
     auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
     auto material_left   = make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);

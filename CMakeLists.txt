@@ -19,6 +19,7 @@ add_executable(raytracing_weekend src/main.cpp
         src/primitives/triangle.h
         src/material/material.h
         src/ext/tiny_obj_loader/tiny_obj_loader.h
+        src/accelerator/bvh.h
 )
 
 target_compile_options(raytracing_weekend PRIVATE ${OpenMP_CXX_FLAGS})

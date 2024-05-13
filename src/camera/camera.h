@@ -23,10 +23,8 @@ public:
 
     void render(const hittable& world) {
         initialize();
-        file = std::ofstream("image.ppm");
-        // Render
-        file << "P3\n" << image_width << ' '<< image_height<<"\n255\n";
 
+        // Render
         std::vector<std::vector<vec3>> image(image_height, std::vector<vec3>(image_width));
 
 #pragma omp parallel for collapse(2)
@@ -42,6 +40,10 @@ public:
             }
         }
         std::clog<<"\rDone.        \n";
+
+        // Save image
+        file = std::ofstream("image.ppm");
+        file << "P3\n" << image_width << ' '<< image_height<<"\n255\n";
 
         for (int j = 0; j < image_height; j++) {
             for (int i = 0; i < image_width; i++) {

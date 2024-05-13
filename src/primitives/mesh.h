@@ -9,39 +9,14 @@
 
 #include "../hittable/hitabble.h"
 #include "../rtweekend.h"
-#include "triangle.h"
 #include <vector>
+#include <filesystem>
 #include "../ext/tiny_obj_loader/tiny_obj_loader.h"
 #include "../primitives/triangle.h"
 #include "../material/material.h"
-#include "bvh/v2/bvh.h"
-#include "bvh/v2/executor.h"
-#include "bvh/v2/thread_pool.h"
-#include "bvh/v2/bbox.h"
-#include "bvh/v2/tri.h"
-#include "bvh/v2/default_builder.h"
-#include "bvh/v2/stack.h"
-
-using Scalar = float;
-using Vec3 = bvh::v2::Vec<Scalar, 3>;
-using BBox = bvh::v2::BBox<Scalar, 3>;
-using Tri = bvh::v2::Tri<Scalar, 3>;
-using Node = bvh::v2::Node<Scalar, 3>;
-using Bvh = bvh::v2::Bvh<Node>;
-using Ray = bvh::v2::Ray<Scalar, 3>;
+#include "../accelerator/bvh.h"
 
 
-using PrecomputedTri = bvh::v2::PrecomputedTri<Scalar>;
-
-namespace convert {
-    Vec3 to(const vec3 &v) {
-        return {static_cast<float>(v.x()), static_cast<float>(v.y()), v.z()};
-    }
-
-    vec3 from(const Vec3 &v) {
-        return {v.values[0], v.values[1], v.values[2]};
-    }
-}
 
 class mesh : public hittable {
 private:
@@ -50,10 +25,19 @@ private:
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
+    std::vector<int> materials_id;
 
     // BVH
-    shared_ptr<Bvh> bvh;
-    std::vector<PrecomputedTri> precomputed;
+    shared_ptr<bvhTree> bvh;
+
+    void dump_material_ids(vector<int>& mat_ids) {
+        for (auto& shape: shapes) {
+            for (auto& id: shape.mesh.material_ids) {
+                mat_ids.emplace_back(id);
+            }
+        }
+    }
+
 public:
     mesh() = default;
 
@@ -84,37 +68,25 @@ public:
                 static_cast<float>(ray_t.min),
                 static_cast<float>(ray_t.max),
         };
+        size_t prim_id = this->bvh->hit(ray, rec);
 
-        static constexpr size_t invalid_id = std::numeric_limits<size_t>::max();
-        static constexpr size_t stack_size = 64;
-        static constexpr bool use_robust_traversal = false;
-
-        auto prim_id = invalid_id;
-        Scalar u, v;
-        static constexpr bool should_permute = true;
-
-        bvh::v2::SmallStack<Bvh::Index, stack_size> stack;
-        bvh->intersect<false, use_robust_traversal>(ray, bvh->get_root().index, stack,
-                                                   [&](size_t begin, size_t end) {
-                                                       for (size_t i = begin; i < end; ++i) {
-                                                           size_t j = should_permute ? i : bvh->prim_ids[i];
-                                                           if (auto hit = precomputed[j].intersect(ray)) {
-                                                               prim_id = i;
-                                                               std::tie(u, v) = *hit;
-                                                           }
-                                                       }
-                                                       return prim_id != invalid_id;
-                                                   });
-
-        if (prim_id != invalid_id) {
-            auto t = precomputed.at(prim_id);
+        if (prim_id != std::numeric_limits<size_t>::max()) {
+            auto t = bvh->precomputed.at(prim_id);
             rec.t = ray.tmax;
-            rec.mat = this->mat;
+            auto material_id = this->materials_id.at(prim_id);
+            if (material_id == -1) {
+                rec.mat = make_shared<metal>(color(1, 0.4, 0.3), 0.5);
+            }
+            else {
+                auto c = materials.at(material_id).diffuse;
+                rec.mat = make_shared<lambertian>(color(c[0], c[1], c[2]));
+            }
             rec.p = r.at(rec.t);
-            vec3 outward_normal = convert::from(normalize(cross(t.e1, t.e2)));
+            vec3 outward_normal = convert::from(normalize(t.n));
             rec.set_face_normal(r, outward_normal);
             return true;
         } else return false;
+
     }
 
     static mesh build(const std::string &filename, const point3& origin) {
@@ -123,9 +95,10 @@ public:
         {
             // READ OBJ FILE
             std::string err;
+            auto mtl_dir = filesystem::path(filename).parent_path().c_str();
             bool status = tinyobj::LoadObj(&new_mesh.attrib, &new_mesh.shapes, &new_mesh.materials, nullptr, &err,
                                            filename
-                                                   .data());
+                                                   .c_str(), mtl_dir);
             if (!err.empty()) {
                 std::cerr << "Failed to load: " << err << std::endl;
                 exit(1);
@@ -134,43 +107,27 @@ public:
             std::clog << "shapes: " << new_mesh.shapes.size() << std::endl;
             std::clog << "Mesh loaded: " << new_mesh.shapes[0].name << " - " << new_mesh.attrib.vertices.size() <<
             std::endl;
+            cout << new_mesh.materials.size() << endl;
+            cout << new_mesh.attrib.normals.size() << endl;
         }
-
         std::vector<Tri> tris;
-        auto lm = [&tris](const point3 &vtx1, const point3 &vtx2, const point3 &vtx3) {
-            tris.emplace_back(Vec3(vtx1.x(), vtx1.y(), vtx1.z()), Vec3(vtx2.x(), vtx2.y(), vtx2.z()), Vec3(vtx3.x(),
-                                                                                                           vtx3.y(),
-                                                                                                           vtx3.z()));
+        auto lm = [&tris, new_mesh](const point3 &vtx1, const point3 &vtx2, const point3 &vtx3) {
+            tris.emplace_back(convert::to(vtx1), convert::to(vtx2), convert::to(vtx3));
         };
         // fill tris with the data
         new_mesh.for_each(lm);
 
-        bvh::v2::ThreadPool thread_pool;
-        bvh::v2::ParallelExecutor executor(thread_pool);
+        // Prepare to have the material_id
+        new_mesh.materials_id.resize(tris.size());
 
-        std::vector<BBox> bboxes(tris.size());
-        std::vector<Vec3> centers(tris.size());
+        // Use for reorder the materials id
+        vector<int> temp_materials;
+        new_mesh.dump_material_ids(temp_materials);
+        auto lm1 = [&new_mesh, temp_materials](size_t& i, size_t& j) {
+            new_mesh.materials_id[i] = temp_materials[j];
+        };
+        new_mesh.bvh = make_shared<bvhTree>(tris, lm1);
 
-        executor.for_each(0, tris.size(), [&](size_t begin, size_t end) {
-            for (size_t i = begin; i < end; ++i) {
-                bboxes[i] = tris[i].get_bbox();
-                centers[i] = tris[i].get_center();
-            }
-        });
-
-        typename bvh::v2::DefaultBuilder<Node>::Config config;
-        config.quality = bvh::v2::DefaultBuilder<Node>::Quality::High;
-        new_mesh.bvh = make_shared<Bvh>(bvh::v2::DefaultBuilder<Node>::build(thread_pool, bboxes, centers, config));
-
-        static constexpr bool should_permute = true;
-
-        new_mesh.precomputed.resize(tris.size());
-        executor.for_each(0, tris.size(), [&](size_t begin, size_t end) {
-            for (size_t i = begin; i < end; ++i) {
-                auto j = should_permute ? new_mesh.bvh->prim_ids[i] : i;
-                new_mesh.precomputed[i] = tris[j];
-            }
-        });
         return std::move(new_mesh);
     }
 };
