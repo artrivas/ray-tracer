@@ -13,6 +13,7 @@
 #include "bvh/v2/default_builder.h"
 #include "bvh/v2/stack.h"
 #include "../vec3/vec3.h"
+#include "../hittable/hitabble.h"
 
 
 using namespace std;
@@ -44,7 +45,7 @@ struct bvhTree {
     vector<PrecomputedTri> precomputed;
 
     /// lm function is used for insert some in the same order of bvh tri precomputed
-    bvhTree(const std::vector<Tri>& tris, auto& lm) {
+    bvhTree(const std::vector<Tri>& tris) {
 
         bvh::v2::ThreadPool thread_pool;
         bvh::v2::ParallelExecutor executor(thread_pool);
@@ -69,18 +70,16 @@ struct bvhTree {
             for (size_t i = begin; i < end; ++i) {
                 auto j = this->bvh->prim_ids[i];
                 this->precomputed[i] = tris[j];
-                lm(i, j);
             }
         });
     }
 
-    size_t hit(Ray &ray, hit_record &rec) {
+    size_t hit(Ray &ray, hit_record &rec, Scalar& u, Scalar& v) {
         static constexpr size_t invalid_id = std::numeric_limits<size_t>::max();
         static constexpr size_t stack_size = 64;
         static constexpr bool use_robust_traversal = false;
 
         auto prim_id = invalid_id;
-        Scalar u, v;
 
         bvh::v2::SmallStack<Bvh::Index, stack_size> stack;
         bvh->intersect<false, use_robust_traversal>(ray, bvh->get_root().index, stack,
