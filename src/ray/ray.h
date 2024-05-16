@@ -15,8 +15,6 @@ public:
 
     ray(const point3& origin, const vec3& direction, double time) : orig(origin), dir(direction), tm(time) {}
 
-    ray(const point3& origin, const vec3& direction) : orig(origin), dir(direction) {}
-
     [[nodiscard]] const point3& origin() const { return orig; }
     [[nodiscard]] const vec3& direction() const {return dir; }
 
