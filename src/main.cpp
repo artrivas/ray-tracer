@@ -25,6 +25,7 @@ int main() {
 
     world = hittable_list(make_shared<bvh_node>(world));
     world.add(make_shared<mesh>(t));
+
 //
 //    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
 //    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
