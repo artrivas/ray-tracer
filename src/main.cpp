@@ -9,7 +9,10 @@
 int main() {
     // World
     hittable_list world;
-    auto t = mesh::build("../samples/car/Car.obj", {0, -1, -3.5});
+    auto t = mesh("../samples/cat/12221_Cat_v1_l3.obj"); // , {0, 22, -30}
+    t.set_origin({0, 22, -30});
+    t.rescale(0.2);
+    t.build();
     auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
     auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
     auto material_left   = make_shared<dielectric>(1.50);
@@ -67,7 +70,7 @@ int main() {
     camera cam;
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 500;
+    cam.samples_per_pixel = 100;
     cam.max_depth         = 50;
 
     cam.vfov     = 20;

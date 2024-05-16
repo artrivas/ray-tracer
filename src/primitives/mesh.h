@@ -5,8 +5,10 @@
 #ifndef RAYTRACING_WEEKEND_MESH_H
 #define RAYTRACING_WEEKEND_MESH_H
 
+#define STB_IMAGE_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
 
+#include "../ext/stb/stb_image.h"
 #include "../hittable/hitabble.h"
 #include "../rtweekend.h"
 #include <vector>
@@ -16,7 +18,7 @@
 #include "../material/material.h"
 #include "../accelerator/bvh.h"
 
-
+typedef bvh::v2::Vec<float, 2> Vec2;
 
 class mesh : public hittable {
 private:
@@ -32,16 +34,33 @@ private:
         }
     };
 
+    struct textureData {
+        unsigned char *imageData;
+        int width{}, height{}, channels{};
+        textureData(const string& path) {
+            this->imageData = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
+            if (!imageData) {
+                cerr << "Error: Can't load the image " << path << endl;
+            }
+        }
+
+        ~textureData() {
+            stbi_image_free(imageData);
+        }
+    };
+
     shared_ptr<material> mat = make_shared<lambertian>(color(0.1, 0.2, 0.5));
     point3 origin{0, 0, 0};
+    float resize_factor = 1;
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::vector<metadata_triangle> meta;
 
+    std::unordered_map<string, shared_ptr<textureData>> textures;
+    filesystem::path work_dir;
     // BVH
     shared_ptr<bvhTree> bvh;
-
 
     void initialize() {
         meta.clear();
@@ -51,10 +70,56 @@ private:
                 (3*i+2), shape.mesh.material_ids.at(i));
             }
         }
+
+        for (auto& material: this->materials) {
+            if (this->textures.find(material.diffuse_texname) == this->textures.end()) {
+                this->textures.insert({material.diffuse_texname, make_shared<textureData>(this->work_dir / material
+                .diffuse_texname)});
+            }
+        }
+        clog << "\nTextures:\n";
+        for (auto& [k, v]: this->textures) {
+            clog << '\t' << k << endl;
+        }
     }
 
 public:
-    mesh() = default;
+    mesh(const std::string &filename) {
+        std::string err;
+        this->work_dir = filesystem::path(filename).parent_path();
+        bool status = tinyobj::LoadObj(&this->attrib, &this->shapes, &this->materials, nullptr, &err,
+                                       filename
+                                               .c_str(), this->work_dir.c_str());
+        if (!err.empty()) {
+            std::cerr << "Failed to load: " << err << std::endl;
+            exit(1);
+        }
+        if (!status) exit(1);
+
+        clog << "Loaded OBJ" << endl;
+        std::clog << "shapes: " << this->shapes.size() << std::endl;
+        for (auto& shape: this->shapes) {
+            clog << shape.name << endl;
+            clog << "\ttriangles: " << shape.mesh.indices.size()/3 << endl;
+        }
+        clog << "materials: " << this->materials.size() << endl;
+    }
+
+    void set_origin(const point3& point) {
+        for (int i = 0; i < this->attrib.vertices.size()/3; i++) {
+            this->attrib.vertices.at(3*i) += point.e[0] - this->origin.e[0];
+            this->attrib.vertices.at(3*i + 1) += point.e[1] - this->origin.e[1];
+            this->attrib.vertices.at(3*i + 2) += point.e[2] - this->origin.e[2];
+        }
+        this->origin = point;
+    }
+
+    void rescale(const float& factor) {
+        for (int i = 0; i < this->attrib.vertices.size(); i++) {
+            this->attrib.vertices.at(i) *= factor / this->resize_factor;
+        }
+        this->resize_factor = factor;
+    }
 
     void for_each(auto fn) {
         for (auto& shape : shapes) {
@@ -68,12 +133,23 @@ public:
                             attrib.vertices.at(3 * idx1 + 2)};
                 point3 vtx3{attrib.vertices.at(3 * idx2), attrib.vertices.at(3 * idx2 + 1),
                             attrib.vertices.at(3 * idx2 + 2)};
-                vtx1 += origin;
-                vtx2 += origin;
-                vtx3 += origin;
                 fn(vtx1, vtx2, vtx3);
             }
         }
+    }
+
+    vec3 get_color(const string& name, const Vec2& vec) const {
+        // TODO: possibly fix - way of get the color (search what is u, v textcoords)
+        vec3 color;
+        const auto& texture = this->textures.find(name)->second;
+        const int i = vec.values[0]*texture->width;
+        const int j = vec.values[1]*texture->height;
+
+        const int index = (texture->width*texture->height - (j*texture->width + i))*texture->channels;
+        color.e[0] = texture->imageData[index] / 255.;
+        color.e[1] = texture->imageData[index + 1] / 255.;
+        color.e[2] = texture->imageData[index + 2] / 255.;
+        return color;
     }
 
     bool hit(const ray &r, interval ray_t, hit_record &rec) const override {
@@ -93,10 +169,19 @@ public:
             auto triangle_data = this->meta.at(this->bvh->bvh->prim_ids[prim_id]);
             if (triangle_data.vertex[0]->texcoord_index != -1) {
                 // Texture Mapping
-//                float z = 1 - u - v;
-//                attrib.texcoords.at(triangle_data.vertex[0]->texcoord_index);
-//                attrib.texcoords.at(triangle_data.vertex[1]->texcoord_index);
-//                attrib.texcoords.at(triangle_data.vertex[2]->texcoord_index);
+                const float z = 1 - u - v;
+                const auto t1 = Vec2{attrib.texcoords.at(triangle_data.vertex[0]->texcoord_index),
+                                                 attrib.texcoords.at(triangle_data.vertex[0]->texcoord_index + 1)};
+
+                const auto t2 = Vec2{attrib.texcoords.at(triangle_data.vertex[1]->texcoord_index),
+                                                 attrib.texcoords.at(triangle_data.vertex[1]->texcoord_index + 1)};
+
+                const auto t3 = Vec2{attrib.texcoords.at(triangle_data.vertex[2]->texcoord_index * 2),
+                                                 attrib.texcoords.at(triangle_data.vertex[2]->texcoord_index + 1)};
+                const auto ans = t1*u + t2*v + t3*z;
+                const auto c = materials.at(triangle_data.material_id).diffuse_texname;
+                const auto diffuse = this->get_color(c, ans);
+                rec.mat = make_shared<lambertian>(diffuse);
             }
             else if (triangle_data.material_id != -1) {
                 auto c = materials.at(triangle_data.material_id).diffuse;
@@ -113,42 +198,17 @@ public:
 
     }
 
-    static mesh build(const std::string &filename, const point3& origin) {
-        mesh new_mesh;
-        new_mesh.origin = origin;
-        {
-            // READ OBJ FILE
-            std::string err;
-            auto mtl_dir = filesystem::path(filename).parent_path().c_str();
-            bool status = tinyobj::LoadObj(&new_mesh.attrib, &new_mesh.shapes, &new_mesh.materials, nullptr, &err,
-                                           filename
-                                                   .c_str(), mtl_dir);
-            if (!err.empty()) {
-                std::cerr << "Failed to load: " << err << std::endl;
-                exit(1);
-            }
-            if (!status) exit(1);
-
-            clog << "Loaded OBJ" << endl;
-            std::clog << "shapes: " << new_mesh.shapes.size() << std::endl;
-            for (auto& shape: new_mesh.shapes) {
-                clog << shape.name << endl;
-                clog << "\ttriangles: " << shape.mesh.indices.size()/3 << endl;
-            }
-            clog << "materials: " << new_mesh.materials.size() << endl;
-        }
+    void build() {
         std::vector<Tri> tris;
-        auto lm = [&tris, new_mesh](const point3 &vtx1, const point3 &vtx2, const point3 &vtx3) {
+        auto lm = [&tris, this](const point3 &vtx1, const point3 &vtx2, const point3 &vtx3) {
             tris.emplace_back(convert::to(vtx1), convert::to(vtx2), convert::to(vtx3));
         };
         // fill tris with the data
-        new_mesh.for_each(lm);
+        this->for_each(lm);
 
         // Prepare to have the material_id
-        new_mesh.initialize();
-        new_mesh.bvh = make_shared<bvhTree>(tris);
-
-        return std::move(new_mesh);
+        this->initialize();
+        this->bvh = make_shared<bvhTree>(tris);
     }
 };
 
