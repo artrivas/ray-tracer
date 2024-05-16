@@ -19,7 +19,9 @@ public:
     std::vector<shared_ptr<hittable>> objects;
 
     hittable_list() = default;
-    explicit hittable_list(const shared_ptr<hittable>& object) {add(object);}
+    explicit hittable_list(const shared_ptr<hittable>& object) {
+        add(object);
+    }
 
     void clear() { objects.clear(); }
 

@@ -32,6 +32,8 @@ private:
         }
     };
 
+
+
     shared_ptr<material> mat = make_shared<lambertian>(color(0.1, 0.2, 0.5));
     point3 origin{0, 0, 0};
     tinyobj::attrib_t attrib;
@@ -111,6 +113,10 @@ public:
             return true;
         } else return false;
 
+    }
+
+    aabb bounding_box () const {
+        return aabb();
     }
 
     static mesh build(const std::string &filename, const point3& origin) {

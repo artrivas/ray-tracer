@@ -1,5 +1,6 @@
 #include "rtweekend.h"
 
+#include "bvh/bvh.h"
 #include "camera/camera.h"
 #include "hittable/hittable_list.h"
 #include "primitives/sphere.h"
@@ -21,6 +22,8 @@ int main() {
     world.add(make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.5, material_left));
     world.add(make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.4, material_bubble));
     world.add(make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
+
+    world = hittable_list(make_shared<bvh_node>(world));
     world.add(make_shared<mesh>(t));
 //
 //    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
@@ -38,8 +41,8 @@ int main() {
 //                    // diffuse
 //                    auto albedo = color::random() * color::random();
 //                    sphere_material = make_shared<lambertian>(albedo);
-                      auto center2 = center + vec3(0, random_double(0,.5), 0);
-                      world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
+//                      auto center2 = center + vec3(0, random_double(0,.5), 0);
+//                      world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
 //                } else if (choose_mat < 0.95) {
 //                    // metal
 //                    auto albedo = color::random(0.5, 1);

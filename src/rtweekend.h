@@ -41,6 +41,11 @@ inline double random_double(double min, double max) {
     return min + (max-min)*random_double();
 }
 
+inline int random_int(int min, int max) {
+    // Returns a random integer in [min,max].
+    return int(random_double(min, max+1));
+}
+
 // Common Headers
 #include "vec3/vec3.h"
 #include "color/color.h"
