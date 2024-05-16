@@ -6,6 +6,7 @@
 #define RAYTRACING_WEEKEND_HITABBLE_H
 
 #include "../rtweekend.h"
+#include "../aabb/aabb.h"
 
 class material;
 
@@ -31,6 +32,7 @@ class hittable {
 public:
     virtual ~hittable() = default;
     virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
+    virtual aabb bounding_box() const = 0;
 };
 
 #endif //RAYTRACING_WEEKEND_HITABBLE_H
