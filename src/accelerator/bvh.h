@@ -2,8 +2,8 @@
 // Created by juaquin on 5/12/24.
 //
 
-#ifndef RAYTRACING_WEEKEND_BVH_H
-#define RAYTRACING_WEEKEND_BVH_H
+#ifndef RAYTRACING_WEEKEND_BVH_H2
+#define RAYTRACING_WEEKEND_BVH_H2
 
 #include "bvh/v2/bvh.h"
 #include "bvh/v2/executor.h"
@@ -98,4 +98,4 @@ struct bvhTree {
     }
 };
 
-#endif //RAYTRACING_WEEKEND_BVH_H
+#endif //RAYTRACING_WEEKEND_BVH_H2
