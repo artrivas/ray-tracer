@@ -6,6 +6,7 @@
 #define RAYTRACING_WEEKEND_MATERIAL_H
 
 #include "../rtweekend.h"
+#include "../texture/texture.h"
 
 class hit_record;
 
@@ -18,13 +19,19 @@ public:
     ) const {
         return false;
     }
+
+    [[nodiscard]] virtual color emitted(double u, double v, const point3& p) const {
+        return {0,0,0};
+    }
 };
 
 class lambertian: public material {
 private:
     color albedo;
+    shared_ptr<texture> tex;
 public:
-    lambertian(const color& albedo): albedo(albedo) {}
+    lambertian(const color& albedo): tex(make_shared<solid_color>(albedo)) {};
+    lambertian(shared_ptr<texture> tex): tex(tex) {};
 
     bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
     const override {
@@ -36,7 +43,7 @@ public:
 
         scattered = ray(rec.p, scatter_direction, r_in.time());
 
-        attenuation = albedo;
+        attenuation = tex->value(rec.u, rec.v, rec.p);
         return true;
     }
 };
@@ -95,6 +102,19 @@ public:
         scattered = ray(rec.p, direction, r_in.time());
         return true;
     }
+};
+
+class diffuse_light : public material {
+public:
+    explicit diffuse_light(shared_ptr<texture> tex) : tex(tex) {}
+    explicit diffuse_light(const color& emit) : tex(make_shared<solid_color>(emit)) {}
+
+    [[nodiscard]] color emitted(double u, double v, const point3& p) const override {
+        return tex->value(u, v, p);
+    }
+
+private:
+    shared_ptr<texture> tex;
 };
 
 #endif //RAYTRACING_WEEKEND_MATERIAL_H
