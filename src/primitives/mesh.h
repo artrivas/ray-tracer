@@ -72,7 +72,8 @@ private:
         }
 
         for (auto& material: this->materials) {
-            if (this->textures.find(material.diffuse_texname) == this->textures.end()) {
+            if (!material.diffuse_texname.empty() and this->textures.find(material.diffuse_texname) == this->textures
+            .end()) {
                 this->textures.insert({material.diffuse_texname, make_shared<textureData>(this->work_dir / material
                 .diffuse_texname)});
             }
@@ -142,10 +143,10 @@ public:
         // TODO: possibly fix - way of get the color (search what is u, v textcoords)
         vec3 color;
         const auto& texture = this->textures.find(name)->second;
-        const int i = vec.values[0]*texture->width;
-        const int j = vec.values[1]*texture->height;
+        const int j = vec.values[0]*texture->width;
+        const int i = vec.values[1]*texture->height;
 
-        const int index = (texture->width*texture->height - (j*texture->width + i))*texture->channels;
+        const int index = (i*texture->width + j)*texture->channels;
         color.e[0] = texture->imageData[index] / 255.;
         color.e[1] = texture->imageData[index + 1] / 255.;
         color.e[2] = texture->imageData[index + 2] / 255.;
@@ -170,17 +171,22 @@ public:
             if (triangle_data.vertex[0]->texcoord_index != -1) {
                 // Texture Mapping
                 const float z = 1 - u - v;
-                const auto t1 = Vec2{attrib.texcoords.at(triangle_data.vertex[0]->texcoord_index),
-                                                 attrib.texcoords.at(triangle_data.vertex[0]->texcoord_index + 1)};
+                const auto t1 = Vec2{attrib.texcoords.at(2*triangle_data.vertex[0]->texcoord_index),
+                                                 attrib.texcoords.at(2*triangle_data.vertex[0]->texcoord_index + 1)};
 
-                const auto t2 = Vec2{attrib.texcoords.at(triangle_data.vertex[1]->texcoord_index),
-                                                 attrib.texcoords.at(triangle_data.vertex[1]->texcoord_index + 1)};
+                const auto t2 = Vec2{attrib.texcoords.at(2*triangle_data.vertex[1]->texcoord_index),
+                                                 attrib.texcoords.at(2*triangle_data.vertex[1]->texcoord_index + 1)};
 
-                const auto t3 = Vec2{attrib.texcoords.at(triangle_data.vertex[2]->texcoord_index * 2),
-                                                 attrib.texcoords.at(triangle_data.vertex[2]->texcoord_index + 1)};
+                const auto t3 = Vec2{attrib.texcoords.at(2*triangle_data.vertex[2]->texcoord_index),
+                                                 attrib.texcoords.at(2*triangle_data.vertex[2]->texcoord_index + 1)};
                 const auto ans = t1*u + t2*v + t3*z;
                 const auto c = materials.at(triangle_data.material_id).diffuse_texname;
                 const auto diffuse = this->get_color(c, ans);
+//                if (diffuse.e[0] == 0 and diffuse.e[1] == 0 and diffuse.e[2] == 0) {
+//                    cout << t1.values[0]<<":"<<t1.values[1] << " " << t2.values[0]<<":"<<t2.values[1] << " " << t3
+//                    .values[0]<<":"<<t3.values[1] <<
+//                    endl;
+//                }
                 rec.mat = make_shared<lambertian>(diffuse);
             }
             else if (triangle_data.material_id != -1) {
