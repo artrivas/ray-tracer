@@ -22,6 +22,7 @@ add_executable(raytracing_weekend src/main.cpp
         src/accelerator/bvh.h
         src/texture/texture.h
         src/perlin/perlin.h
+        src/primitives/quads.h
 )
 
 target_link_libraries(raytracing_weekend PUBLIC stdc++)
