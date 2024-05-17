@@ -20,8 +20,8 @@ add_executable(raytracing_weekend src/main.cpp
         src/material/material.h
         src/ext/tiny_obj_loader/tiny_obj_loader.h
         src/accelerator/bvh.h
-        src/aabb/aabb.h
-        src/bvh/bvh.h
+        src/texture/texture.h
+        src/perlin/perlin.h
 )
 
 target_link_libraries(raytracing_weekend PUBLIC stdc++)
