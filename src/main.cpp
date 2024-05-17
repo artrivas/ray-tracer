@@ -194,17 +194,17 @@ void cornell_box() {
 
 void custom2() {
     hittable_list world;
-    auto t = mesh("../samples/cat/12221_Cat_v1_l3.obj"); // , {0, 22, -30}
-    t.set_origin({0, 22, -30});
-    t.rescale(0.2);
+    auto t = mesh("../samples/car/Car.obj");
+    t.set_origin({0, 0, 0});
+//    t.rescale(1);
     t.build();
-
-    auto difflight = make_shared<diffuse_light>(color(4,4,4));
-    world.add(make_shared<sphere>(point3(0,30,0), 2, difflight));
     world.add(make_shared<mesh>(t));
 
-    auto checker = make_shared<checker_texture>(0.32, color(.5, .0, .1), color(.9, .9, .9));
-    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(checker)));
+    auto difflight = make_shared<diffuse_light>(color(4,4,4));
+    world.add(make_shared<sphere>(point3(0,30,0), 5, difflight));
+
+//    auto checker = make_shared<checker_texture>(0.32, color(.5, .0, .1), color(.9, .9, .9));
+//    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(checker)));
 
     camera cam;
 
@@ -212,7 +212,7 @@ void custom2() {
     cam.image_width       = 400;
     cam.samples_per_pixel = 500;
     cam.max_depth         = 50;
-    cam.background        = color(0.0, 0.0, 0.0);
+    cam.background        = color(0, 0, 0);
 
     cam.vfov     = 20;
     cam.lookfrom = point3(13,2,3);
