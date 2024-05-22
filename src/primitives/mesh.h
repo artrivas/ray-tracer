@@ -13,7 +13,7 @@
 #include "../rtweekend.h"
 #include <vector>
 #include <filesystem>
-#include "../ext/tiny_obj_loader/tiny_obj_loader.h"
+#include "tiny_obj_loader.h"
 #include "../primitives/triangle.h"
 #include "../material/material.h"
 #include "../accelerator/bvh.h"

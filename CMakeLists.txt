@@ -4,6 +4,10 @@ project(raytracing_weekend)
 find_package(OpenMP REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
+
+add_library(tiny_obj_loader STATIC src/ext/tiny_obj_loader/tiny_obj_loader.cc)
+target_include_directories(tiny_obj_loader PUBLIC ${CMAKE_SOURCE_DIR}/src/ext/tiny_obj_loader)
+
 add_subdirectory(src/ext/bvh)
 add_executable(raytracing_weekend src/main.cpp
         src/vec3/vec3.h
@@ -18,12 +22,12 @@ add_executable(raytracing_weekend src/main.cpp
         src/primitives/mesh.h
         src/primitives/triangle.h
         src/material/material.h
-        src/ext/tiny_obj_loader/tiny_obj_loader.h
         src/accelerator/bvh.h
         src/texture/texture.h
         src/perlin/perlin.h
         src/primitives/quads.h
 )
+target_link_libraries(raytracing_weekend PRIVATE tiny_obj_loader)
 
 target_link_libraries(raytracing_weekend PUBLIC stdc++)
 target_link_libraries(raytracing_weekend PUBLIC m)
