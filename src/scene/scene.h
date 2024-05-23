@@ -51,7 +51,7 @@ public:
             t->set_material(rec, ray.hit.primID, u, v);
             rec.t = ray.ray.tfar;
             rec.p = r.at(rec.t);
-            rec.set_face_normal(r, vec3(ray.hit.Ng_x, ray.hit.Ng_y, ray.hit.Ng_z));
+            rec.set_face_normal(r, unit_vector(vec3(ray.hit.Ng_x, ray.hit.Ng_y, ray.hit.Ng_z)));
             return true;
         }
         return false;

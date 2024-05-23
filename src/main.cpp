@@ -8,7 +8,6 @@
 #include "scene/scene.h"
 
 void custom() {
-    hittable_list w;
     scene world;
     auto t = mesh("../samples/cat/12221_Cat_v1_l3.obj"); // , {0, 22, -30}
     t.set_origin({0, 22, -30});
@@ -28,13 +27,13 @@ void custom() {
     auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
     world.add_sphere(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(checker)));
     world.build();
-    w.add(make_shared<scene>(std::move(world)));
+
     camera cam;
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 500;
-    cam.max_depth         = 50;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 3;
     cam.background        = color(0.70, 0.80, 1.00);
 
     cam.vfov     = 20;
@@ -45,24 +44,22 @@ void custom() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(w);
+    cam.render(world);
 }
 
 void checkered_spheres() {
-    hittable_list w;
     scene world;
     auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
 
     world.add_sphere(make_shared<sphere>(point3(0,-10, 0), 10, make_shared<lambertian>(checker)));
     world.add_sphere(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(checker)));
-
-    w.add(make_shared<scene>(std::move(world)));
+    world.build();
     camera cam;
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
     cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
+    cam.max_depth         = 3;
     cam.background        = color(0.70, 0.80, 1.00);
 
     cam.vfov     = 20;
@@ -76,20 +73,18 @@ void checkered_spheres() {
 }
 
 void perlin() {
-    hittable_list w;
     scene world;
 
     auto pertext = make_shared<noise_texture>(4);
     world.add_sphere(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(pertext)));
     world.add_sphere(make_shared<sphere>(point3(0,2,0), 2, make_shared<lambertian>(pertext)));
-
-    w.add(make_shared<scene>(std::move(world)));
+    world.build();
 
     camera cam;
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
     cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
+    cam.max_depth         = 3;
     cam.background        = color(0.70, 0.80, 1.00);
 
     cam.vfov     = 20;
@@ -136,7 +131,6 @@ void perlin() {
 //}
 
 void simple_light() {
-    hittable_list w;
     scene world;
 
     auto pertext = make_shared<noise_texture>(4);
@@ -147,14 +141,13 @@ void simple_light() {
     world.add_sphere(make_shared<sphere>(point3(0,7,0), 2, difflight));
     auto material_bubble = make_shared<dielectric>(1.00 / 1.50);
     world.add_sphere(make_shared<sphere>(point3(0,7,0),   2.5, material_bubble));
-
-    w.add(make_shared<scene>(std::move(world)));
+    world.build();
     camera cam;
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
     cam.samples_per_pixel = 100;
-    cam.max_depth         = 50;
+    cam.max_depth         = 3;
     cam.background        = color(0,0,0);
 
     cam.vfov     = 20;
@@ -201,8 +194,7 @@ void simple_light() {
 //}
 
 void custom2() {
-    hittable_list w;
-    shared_ptr world = make_shared<scene>();
+    scene world;
     auto t = mesh("../samples/cat/12221_Cat_v1_l3.obj"); // , {0, 22, -30}
     t.set_origin({0, 22, -30});
     t.rescale(0.2);
@@ -210,18 +202,17 @@ void custom2() {
     auto difflight = make_shared<diffuse_light>(color(4,4,4));
     auto checker = make_shared<checker_texture>(0.32, color(.5, .0, .1), color(.9, .9, .9));
 
-    world->add_sphere(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
-    world->add_obj(make_shared<mesh>(t));
-    world->add_sphere(make_shared<sphere>(point3(0, 30, 0), 0.2, difflight));
-    world->build();
-    w.add(world);
+    world.add_sphere(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
+    world.add_obj(make_shared<mesh>(t));
+    world.add_sphere(make_shared<sphere>(point3(0, 30, 0), 2, difflight));
+    world.build();
 
 
     camera cam;
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 500;
+    cam.samples_per_pixel = 100;
     cam.max_depth         = 3;
     cam.background        = color(0.0, 0.0, 0.0);
 
@@ -233,7 +224,7 @@ void custom2() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(w);
+    cam.render(world);
 }
 
 int main() {

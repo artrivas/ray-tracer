@@ -49,9 +49,9 @@ struct bvhTree {
     unsigned int add_sphere(const array<float, 4>& sphere) const {
         auto geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
 
-        rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT4, sizeof(array<float, 4>), 1);
-        array<float, 4>* t = (array<float, 4>*)rtcGetGeometryBufferData(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0);
-        memcpy(t, &sphere, sizeof(array<float, 4>));
+        rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT4, sizeof(float)*4, 1);
+        float* t = (float*)rtcGetGeometryBufferData(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0);
+        memcpy(t, sphere.data(), sizeof(float)*4);
 
         rtcCommitGeometry(geom);
         unsigned int id = rtcAttachGeometry(scene, geom);
