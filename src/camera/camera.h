@@ -30,7 +30,7 @@ public:
     double defocus_angle = 0;  // Variation angle of rays through each pixel
     double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
-    void render(const hittable& world) {
+    void render(hittable& world) {
         initialize();
 
         // Render
@@ -144,7 +144,7 @@ private:
         return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
     }
 
-    [[nodiscard]] color ray_color(const ray& r, int depth, const hittable& world) const {
+    [[nodiscard]] color ray_color(const ray& r, int depth, hittable& world) {
         // If we pass ray bounce limit, no more light gathered.
         if (depth <= 0) {
             return {0,0,0};

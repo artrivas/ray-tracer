@@ -5,96 +5,72 @@
 #ifndef RAYTRACING_WEEKEND_BVH_H2
 #define RAYTRACING_WEEKEND_BVH_H2
 
-#include "bvh/v2/bvh.h"
-#include "bvh/v2/executor.h"
-#include "bvh/v2/thread_pool.h"
-#include "bvh/v2/bbox.h"
-#include "bvh/v2/tri.h"
-#include "bvh/v2/default_builder.h"
-#include "bvh/v2/stack.h"
-#include "../vec3/vec3.h"
-#include "../hittable/hitabble.h"
+
+#include "embree4/rtcore.h"
 
 
 using namespace std;
 
 using Scalar = float;
-using Vec3 = bvh::v2::Vec<Scalar, 3>;
-using BBox = bvh::v2::BBox<Scalar, 3>;
-using Tri = bvh::v2::Tri<Scalar, 3>;
-using Node = bvh::v2::Node<Scalar, 3>;
-using Bvh = bvh::v2::Bvh<Node>;
-using Ray = bvh::v2::Ray<Scalar, 3>;
-
-using PrecomputedTri = bvh::v2::PrecomputedTri<Scalar>;
-
-namespace convert {
-    Vec3 to(const vec3 &v) {
-        return {static_cast<float>(v.x()), static_cast<float>(v.y()), v.z()};
-    }
-
-    vec3 from(const Vec3 &v) {
-        return {v.values[0], v.values[1], v.values[2]};
-    }
-}
 
 
 /// Adapter for BVH library
 struct bvhTree {
-    shared_ptr<Bvh> bvh;
-    vector<PrecomputedTri> precomputed;
-
-    /// lm function is used for insert some in the same order of bvh tri precomputed
-    bvhTree(const std::vector<Tri>& tris) {
-
-        bvh::v2::ThreadPool thread_pool;
-        bvh::v2::ParallelExecutor executor(thread_pool);
-
-        std::vector<BBox> bboxes(tris.size());
-        std::vector<Vec3> centers(tris.size());
-
-        executor.for_each(0, tris.size(), [&](size_t begin, size_t end) {
-            for (size_t i = begin; i < end; ++i) {
-                bboxes[i] = tris[i].get_bbox();
-                centers[i] = tris[i].get_center();
-            }
-        });
-
-        typename bvh::v2::DefaultBuilder<Node>::Config config;
-        config.quality = bvh::v2::DefaultBuilder<Node>::Quality::High;
-
-        this->bvh = make_shared<Bvh>(bvh::v2::DefaultBuilder<Node>::build(thread_pool, bboxes, centers, config));
-
-        this->precomputed.resize(tris.size());
-        executor.for_each(0, tris.size(), [&](size_t begin, size_t end) {
-            for (size_t i = begin; i < end; ++i) {
-                auto j = this->bvh->prim_ids[i];
-                this->precomputed[i] = tris[j];
-            }
-        });
+    RTCDevice device;
+    RTCScene scene;
+    bvhTree() {
+        device = rtcNewDevice(nullptr);
+        scene = rtcNewScene(device);
     }
 
-    size_t hit(Ray &ray, hit_record &rec, Scalar& u, Scalar& v) {
-        static constexpr size_t invalid_id = std::numeric_limits<size_t>::max();
-        static constexpr size_t stack_size = 64;
-        static constexpr bool use_robust_traversal = false;
+    unsigned int add_mesh(const vector<unsigned int>& index, const vector<float>& vertices) const {
+        auto geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
-        auto prim_id = invalid_id;
 
-        bvh::v2::SmallStack<Bvh::Index, stack_size> stack;
-        bvh->intersect<false, use_robust_traversal>(ray, bvh->get_root().index, stack,
-                                                    [&](size_t begin, size_t end) {
-                                                        for (size_t i = begin; i < end; ++i) {
-                                                            size_t j = i;
-                                                            if (auto hit = precomputed[j].intersect(ray)) {
-                                                                prim_id = i;
-                                                                std::tie(u, v) = *hit;
-                                                            }
-                                                        }
-                                                        return prim_id != invalid_id;
-                                                    });
-        return prim_id;
+//        rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3,sizeof(float)*3,
+//                                vertices.size()/3);
+//        auto* vertex_buffer = (float*) rtcGetGeometryBufferData(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0);
+//        std::copy(vertices.begin(), vertices.end(), vertex_buffer);
+        rtcSetSharedGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, vertices.data(),
+                                   0, sizeof(float)*3, vertices.size()/3);
+//        rtcSetSharedGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, index.data(), 0, sizeof
+//        (unsigned int)*3, index.size()/3);
+        rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3,sizeof(unsigned int)
+        *3, index.size()/3);
+        auto* index_buffer = (unsigned int*) rtcGetGeometryBufferData(geom, RTCBufferType::RTC_BUFFER_TYPE_INDEX, 0);
+        std::copy(index.begin(), index.end(), index_buffer);
 
+        rtcCommitGeometry(geom);
+        unsigned int id = rtcAttachGeometry(scene, geom);
+        rtcReleaseGeometry(geom);
+        return id;
+    }
+
+    unsigned int add_sphere(const array<float, 4>& sphere) const {
+        auto geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
+
+        rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT4, sizeof(array<float, 4>), 1);
+        array<float, 4>* t = (array<float, 4>*)rtcGetGeometryBufferData(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0);
+        memcpy(t, &sphere, sizeof(array<float, 4>));
+
+        rtcCommitGeometry(geom);
+        unsigned int id = rtcAttachGeometry(scene, geom);
+        rtcReleaseGeometry(geom);
+        return id;
+    }
+
+    void build() const {
+        rtcCommitScene(scene);
+    }
+    void hit(RTCRayHit &ray, Scalar& u, Scalar& v) {
+        rtcIntersect1(scene, &ray);
+        u = ray.hit.u;
+        v = ray.hit.v;
+    }
+
+    ~bvhTree() {
+        rtcReleaseScene(scene);
+        rtcReleaseDevice(device);
     }
 };
 
