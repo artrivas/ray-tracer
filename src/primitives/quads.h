@@ -36,7 +36,7 @@ public:
         return true;
     }
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec) override {
         auto denom = dot(normal, r.direction());
 
         if (fabs(denom) < 1e-8)

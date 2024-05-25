@@ -1,3 +1,0 @@
-[submodule "src/ext/bvh"]
-	path = src/ext/bvh
-	url = git@github.com:madmann91/bvh.git
