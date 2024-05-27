@@ -8,6 +8,7 @@
 #include "../rtweekend.h"
 #include "../hittable/hitabble.h"
 #include "../accelerator/bvh.h"
+#include "../primitives/sphere.h"
 #include "../primitives/mesh.h"
 
 class scene: public hittable {
