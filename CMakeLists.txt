@@ -25,6 +25,7 @@ add_executable(raytracing_weekend src/main.cpp
         src/perlin/perlin.h
         src/primitives/quads.h
         src/scene/scene.h
+        src/primitives/sphere.h
 )
 target_link_libraries(raytracing_weekend PRIVATE tiny_obj_loader embree)
 
