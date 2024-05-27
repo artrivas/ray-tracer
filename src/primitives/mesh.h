@@ -179,12 +179,10 @@ public:
                 rec.mat = make_shared<lambertian>(diffuse);
             }
         else if (triangle.material_id != -1) {
-            cout << "2" << endl;
             auto c = materials.at(triangle.material_id).diffuse;
             rec.mat = make_shared<lambertian>(color(c[0], c[1], c[2]));
         }
         else {
-            cout << "3" << endl;
             rec.mat = make_shared<lambertian>(color(1, 0.5, .5));
         }
     }

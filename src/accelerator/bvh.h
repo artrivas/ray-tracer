@@ -7,7 +7,7 @@
 
 
 #include "embree4/rtcore.h"
-
+#include <array>
 
 using namespace std;
 

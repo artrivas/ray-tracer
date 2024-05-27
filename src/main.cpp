@@ -227,6 +227,40 @@ void custom2() {
     cam.render(world);
 }
 
+void custom3() {
+    scene world;
+    auto t = mesh("../samples/cat/12221_Cat_v1_l3.obj"); // , {0, 22, -30}
+    t.set_origin({0, 0, 0});
+    t.rescale(0.1);
+
+    auto difflight = make_shared<diffuse_light>(color(4,4,4));
+    auto checker = make_shared<checker_texture>(0.32, color(.5, .0, .1), color(.9, .9, .9));
+
+//    world.add_sphere(make_shared<sphere>(point3(0, 50000, -30000), 1000, make_shared<lambertian>(checker)));
+    world.add_obj(make_shared<mesh>(t));
+//    world.add_sphere(make_shared<sphere>(point3(0, 30, -10), 2, difflight));
+    world.build();
+
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 1080;
+    cam.samples_per_pixel = 200;
+    cam.max_depth         = 3;
+    cam.background        = color(0.0, 1.0, 1.0);
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(13,2,3);
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0.6;
+    cam.focus_dist    = 10.0;
+
+    cam.render(world);
+}
+
 int main() {
     switch (7) {
         case 1: custom();  break;
@@ -235,6 +269,6 @@ int main() {
 //        case 4: quads(); break;
         case 5:  simple_light(); break;
 //        case 6: cornell_box(); break;
-        case 7: custom2(); break;
+        case 7: custom3(); break;
     }
 }
