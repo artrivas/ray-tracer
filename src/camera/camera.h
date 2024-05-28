@@ -87,7 +87,7 @@ public:
                     for (int s_i = 0; s_i < sqrt_spp; s_i++)
                     {
                         ray r = get_ray_montecarlo(i, j, s_i, s_j);
-                        pixel_color += ray_color(r, max_depth, world);
+                        pixel_color += ray_color_montecarlo(r, max_depth, world);
                     }
                 }
                 write_color(std::cout, pixel_samples_scale * pixel_color);
@@ -231,6 +231,34 @@ private:
             return color_from_emission;
 
         color color_from_scatter = attenuation * ray_color(scattered, depth - 1, world);
+
+        return color_from_emission + color_from_scatter;
+    }
+
+    color ray_color_montecarlo(const ray &r, int depth, hittable &world) const
+    {
+        // If we've exceeded the ray bounce limit, no more light is gathered.
+        if (depth <= 0)
+            return color(0, 0, 0);
+
+        hit_record rec;
+
+        // If the ray hits nothing, return the background color.
+        if (!world.hit(r, interval(0.001, infinity), rec))
+            return background;
+
+        ray scattered;
+        color attenuation;
+        color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
+
+        if (!rec.mat->scatter(r, rec, attenuation, scattered))
+            return color_from_emission;
+
+        double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered);
+        double pdf = scattering_pdf;
+
+        color color_from_scatter =
+            (attenuation * scattering_pdf * ray_color_montecarlo(scattered, depth - 1, world)) / pdf;
 
         return color_from_emission + color_from_scatter;
     }
