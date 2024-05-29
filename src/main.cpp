@@ -94,7 +94,7 @@ void perlin() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    cam.render_montecarlo(world);
 }
 
 //void quads() {
@@ -232,6 +232,8 @@ void custom3() {
     t.set_origin({0, 0, 0});
     t.rescale(0.1);
 
+    world.add_sphere(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(color(1.0,0.0,0.0))));
+
     world.add_obj(make_shared<mesh>(t));
     world.build();
 
@@ -251,11 +253,11 @@ void custom3() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(world);
+    cam.render_montecarlo(world);
 }
 
 int main() {
-    switch (7) {
+    switch (3) {
         case 1: custom();  break;
         case 2: checkered_spheres(); break;
         case 3: perlin(); break;

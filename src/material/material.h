@@ -19,6 +19,11 @@ public:
     ) const {
         return false;
     }
+    virtual float scattering_pdf(const ray &r_in, const hit_record &rec, const ray &scattered)
+        const
+    {
+        return 0;
+    }
 
     [[nodiscard]] virtual color emitted(float u, float v, const point3& p) const {
         return {0,0,0};
@@ -30,8 +35,8 @@ private:
     color albedo;
     shared_ptr<texture> tex;
 public:
-    lambertian(const color& albedo): tex(make_shared<solid_color>(albedo)) {};
-    lambertian(shared_ptr<texture> tex): tex(tex) {};
+    lambertian(const color &albedo) : tex(make_shared<solid_color>(albedo)){};
+    lambertian(shared_ptr<texture> tex) : tex(tex){};
 
     bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
     const override {
@@ -45,6 +50,12 @@ public:
 
         attenuation = tex->value(rec.u, rec.v, rec.p);
         return true;
+    }
+
+    float scattering_pdf(const ray &r_in, const hit_record &rec, const ray &scattered) const
+    {
+        auto cos_theta = dot(rec.normal, unit_vector(scattered.direction()));
+        return cos_theta < 0 ? 0 : cos_theta / pi;
     }
 };
 
@@ -74,8 +85,8 @@ private:
     static float reflectance(float cosine, float refraction_index) {
         // Use Schlick's approximation for reflectance.
         auto r0 = (1 - refraction_index) / (1 + refraction_index);
-        r0 = r0*r0;
-        return r0 + (1-r0)*pow((1 - cosine),5);
+        r0 = r0 * r0;
+        return r0 + (1 - r0) * pow((1 - cosine), 5);
     }
 
 public:
@@ -107,7 +118,7 @@ public:
 class diffuse_light : public material {
 public:
     explicit diffuse_light(shared_ptr<texture> tex) : tex(tex) {}
-    explicit diffuse_light(const color& emit) : tex(make_shared<solid_color>(emit)) {}
+    explicit diffuse_light(const color &emit) : tex(make_shared<solid_color>(emit)) {}
 
     [[nodiscard]] color emitted(float u, float v, const point3& p) const override {
         return tex->value(u, v, p);
@@ -117,4 +128,4 @@ private:
     shared_ptr<texture> tex;
 };
 
-#endif //RAYTRACING_WEEKEND_MATERIAL_H
+#endif // RAYTRACING_WEEKEND_MATERIAL_H
