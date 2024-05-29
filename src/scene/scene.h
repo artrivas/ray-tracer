@@ -10,6 +10,7 @@
 #include "../accelerator/bvh.h"
 #include "../primitives/sphere.h"
 #include "../primitives/mesh.h"
+#include "../primitives/quads.h"
 
 class scene: public hittable {
 public:
@@ -28,6 +29,13 @@ public:
     void add_obj(const shared_ptr<mesh>& obj) {
         auto indices = obj->get_indices();
         auto id = bvh->add_mesh(indices, obj->attrib.vertices);
+        cout << id << endl;
+        objs.push_back(obj);
+    }
+    void add_quad(const shared_ptr<quad>& obj) {
+        array<unsigned int, 4> indices = {0, 1, 2, 3};
+        auto vertices = obj->get_quad();
+        auto id = bvh->add_quad(indices, vertices);
         cout << id << endl;
         objs.push_back(obj);
     }
