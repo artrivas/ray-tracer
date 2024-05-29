@@ -253,11 +253,12 @@ void custom3() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render_montecarlo(world);
+    cam.render(world);
+//    cam.render_montecarlo(world);
 }
 
 int main() {
-    switch (3) {
+    switch (7) {
         case 1: custom();  break;
         case 2: checkered_spheres(); break;
         case 3: perlin(); break;

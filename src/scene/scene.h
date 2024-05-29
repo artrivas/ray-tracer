@@ -60,6 +60,9 @@ public:
             t->set_material(rec, ray.hit.primID, u, v);
             rec.t = ray.ray.tfar;
             rec.normal = unit_vector(vec3(ray.hit.Ng_x, ray.hit.Ng_y, ray.hit.Ng_z));
+
+            // Displacement improves black acne in image. Prevents origin of scattered ray to start below the surface
+            // because of floating point precision when calculating the point p.
             rec.p = r.at(rec.t) + 1e-4 * rec.normal;
             return true;
         }
