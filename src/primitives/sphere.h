@@ -16,7 +16,7 @@ public:
     float radius;
     shared_ptr<material> mat;
 
-    sphere(const point3& center, double radius, const shared_ptr<material>& mat): radius(fmax(0, radius)),
+    sphere(const point3& center, double radius, const shared_ptr<material>& mat): center(center), radius(fmax(0, radius)),
                                                                                   mat(mat){}
 
     void set_material(hit_record& rec, const unsigned int& primID, const float& u, const float& v) override {
