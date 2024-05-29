@@ -20,7 +20,7 @@ public:
         return false;
     }
 
-    [[nodiscard]] virtual color emitted(double u, double v, const point3& p) const {
+    [[nodiscard]] virtual color emitted(float u, float v, const point3& p) const {
         return {0,0,0};
     }
 };
@@ -51,9 +51,9 @@ public:
 class metal : public material {
 private:
     color albedo;
-    double fuzz;
+    float fuzz;
 public:
-    metal(const color& albedo, double fuzz) : albedo(albedo), fuzz(fuzz < 1 ? fuzz : 1) {}
+    metal(const color& albedo, float fuzz) : albedo(albedo), fuzz(fuzz < 1 ? fuzz : 1) {}
 
     bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
     const override {
@@ -69,9 +69,9 @@ class dielectric : public material {
 private:
     // Refractive index in vacuum or air, or the ratio of the material's refractive index over
     // the refractive index of the enclosing media
-    double refraction_index;
+    float refraction_index;
 
-    static double reflectance(double cosine, double refraction_index) {
+    static float reflectance(float cosine, float refraction_index) {
         // Use Schlick's approximation for reflectance.
         auto r0 = (1 - refraction_index) / (1 + refraction_index);
         r0 = r0*r0;
@@ -79,21 +79,21 @@ private:
     }
 
 public:
-    dielectric(double refraction_index) : refraction_index(refraction_index) {}
+    dielectric(float refraction_index) : refraction_index(refraction_index) {}
 
     bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
     const override {
         attenuation = color(1.0, 1.0, 1.0);
-        double ri = rec.front_face ? (1.0/refraction_index) : refraction_index;
+        float ri = rec.front_face ? (1.0/refraction_index) : refraction_index;
 
         vec3 unit_direction = unit_vector(r_in.direction());
-        double cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);
-        double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+        float cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);
+        float sin_theta = sqrt(1.0 - cos_theta*cos_theta);
 
         bool cannot_refract = ri * sin_theta > 1.0;
         vec3 direction;
 
-        if (cannot_refract || reflectance(cos_theta, ri) > random_double()) {
+        if (cannot_refract || reflectance(cos_theta, ri) > random_float()) {
             direction = reflect(unit_direction, rec.normal);
         } else {
             direction = refract(unit_direction, rec.normal, ri);
@@ -109,7 +109,7 @@ public:
     explicit diffuse_light(shared_ptr<texture> tex) : tex(tex) {}
     explicit diffuse_light(const color& emit) : tex(make_shared<solid_color>(emit)) {}
 
-    [[nodiscard]] color emitted(double u, double v, const point3& p) const override {
+    [[nodiscard]] color emitted(float u, float v, const point3& p) const override {
         return tex->value(u, v, p);
     }
 

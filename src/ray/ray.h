@@ -13,21 +13,21 @@ public:
 
     ray(const point3& origin, const vec3& direction) : orig(origin), dir(direction), tm(0){} //El tiempo que se demora la luz para llegar a un objeto foto-sensible
 
-    ray(const point3& origin, const vec3& direction, double time) : orig(origin), dir(direction), tm(time) {}
+    ray(const point3& origin, const vec3& direction, float time) : orig(origin), dir(direction), tm(time) {}
 
     [[nodiscard]] const point3& origin() const { return orig; }
     [[nodiscard]] const vec3& direction() const {return dir; }
 
-    double time() const { return tm;}
+    float time() const { return tm;}
 
-    [[nodiscard]] point3 at(double t) const {
+    [[nodiscard]] point3 at(float t) const {
         return orig + t*dir;
     }
 
 private:
     point3 orig;
     vec3 dir;
-    double tm;
+    float tm;
 };
 
 #endif //RAYTRACING_WEEKEND_RAY_H

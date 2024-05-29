@@ -41,13 +41,13 @@ public:
     }
     bool hit(const ray& r, interval ray_t, hit_record& rec) override {
         RTCRayHit ray{};
-        ray.ray.org_x = float(r.origin().x());
-        ray.ray.org_y = float(r.origin().y());
-        ray.ray.org_z = float(r.origin().z());
+        ray.ray.org_x = r.origin().x();
+        ray.ray.org_y = r.origin().y();
+        ray.ray.org_z = r.origin().z();
 
-        ray.ray.dir_x = float(r.direction().x());
-        ray.ray.dir_y = float(r.direction().y());
-        ray.ray.dir_z = float(r.direction().z());
+        ray.ray.dir_x = r.direction().x();
+        ray.ray.dir_y = r.direction().y();
+        ray.ray.dir_z = r.direction().z();
         ray.ray.tnear = 0;
         ray.ray.tfar = std::numeric_limits<float>::infinity();
         ray.hit.geomID = RTC_INVALID_GEOMETRY_ID;
@@ -59,8 +59,8 @@ public:
             auto t = objs.at(ray.hit.geomID);
             t->set_material(rec, ray.hit.primID, u, v);
             rec.t = ray.ray.tfar;
-            rec.p = r.at(rec.t);
-            rec.set_face_normal(r, unit_vector(vec3(ray.hit.Ng_x, ray.hit.Ng_y, ray.hit.Ng_z)));
+            rec.normal = unit_vector(vec3(ray.hit.Ng_x, ray.hit.Ng_y, ray.hit.Ng_z));
+            rec.p = r.at(rec.t) + 1e-4 * rec.normal;
             return true;
         }
         return false;

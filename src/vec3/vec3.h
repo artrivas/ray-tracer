@@ -9,17 +9,17 @@
 
 class vec3 {
 public:
-    double e[3];
+    float e[3];
     vec3(): e{0,0,0} {};
-    vec3(double e0, double e1, double e2): e{e0, e1, e2} {};
+    vec3(float e0, float e1, float e2): e{e0, e1, e2} {};
 
-    [[nodiscard]] double x() const { return e[0]; }
-    [[nodiscard]] double y() const { return e[1]; }
-    [[nodiscard]] double z() const { return e[2]; }
+    [[nodiscard]] float x() const { return e[0]; }
+    [[nodiscard]] float y() const { return e[1]; }
+    [[nodiscard]] float z() const { return e[2]; }
 
     vec3 operator-() const { return {-e[0], -e[1], -e[2]}; };
-    double operator[](int i) const { return e[i]; };
-    double& operator[](int i) { return e[i]; }
+    float operator[](int i) const { return e[i]; };
+    float& operator[](int i) { return e[i]; }
 
     vec3& operator+=(const vec3& v) {
         e[0] += v.e[0];
@@ -28,22 +28,22 @@ public:
         return *this;
     }
 
-    vec3& operator*=(double t) {
+    vec3& operator*=(float t) {
         e[0] *= t;
         e[1] *= t;
         e[2] *= t;
         return *this;
     }
 
-    vec3& operator/=(double t) {
+    vec3& operator/=(float t) {
         return *this *= 1/t;
     }
 
-    [[nodiscard]] double length() const {
+    [[nodiscard]] float length() const {
         return sqrt(length_squared());
     }
 
-    [[nodiscard]] double length_squared() const {
+    [[nodiscard]] float length_squared() const {
         return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
     }
 
@@ -54,11 +54,11 @@ public:
     }
 
     static vec3 random() {
-        return {random_double(), random_double(), random_double()};
+        return {random_float(), random_float(), random_float()};
     }
 
-    static vec3 random(double min, double max) {
-        return {random_double(min, max), random_double(min, max), random_double(min, max)};
+    static vec3 random(float min, float max) {
+        return {random_float(min, max), random_float(min, max), random_float(min, max)};
     }
 };
 
@@ -82,19 +82,19 @@ inline vec3 operator*(const vec3& u, const vec3& v) {
     return {u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2] };
 }
 
-inline vec3 operator*(double t, const vec3& v) {
+inline vec3 operator*(float t, const vec3& v) {
     return {t * v.e[0], t * v.e[1], t * v.e[2] };
 }
 
-inline vec3 operator*(const vec3& v, double t) {
+inline vec3 operator*(const vec3& v, float t) {
     return t * v;
 }
 
-inline vec3 operator/(const vec3& v, double t) {
+inline vec3 operator/(const vec3& v, float t) {
     return (1/t) * v;
 }
 
-inline double dot(const vec3& u, const vec3& v) {
+inline float dot(const vec3& u, const vec3& v) {
     return u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2];
 }
 
@@ -111,7 +111,7 @@ inline vec3 unit_vector(const vec3& v) {
 
 inline vec3 random_in_unit_disk() {
     while (true) {
-        auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
+        auto p = vec3(random_float(-1,1), random_float(-1,1), 0);
         if (p.length_squared() < 1)
             return p;
     }
@@ -143,7 +143,7 @@ inline vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2*dot(v,n)*n;
 }
 
-inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) {
+inline vec3 refract(const vec3& uv, const vec3& n, float etai_over_etat) {
     auto cos_theta = fmin(dot(-uv, n), 1.0);
     vec3 r_out_perp =  etai_over_etat * (uv + cos_theta*n);
     vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;

@@ -10,7 +10,7 @@
 class perlin {
 private:
     static const int point_count = 256;
-    double* randfloat;
+    float* randfloat;
     int* perm_x;
     int* perm_y;
     int* perm_z;
@@ -36,7 +36,7 @@ private:
         }
     }
 
-    static double perlin_interp(const vec3 c[2][2][2], double u, double v, double w) {
+    static float perlin_interp(const vec3 c[2][2][2], float u, float v, float w) {
         auto uu = u*u*(3-2*u);
         auto vv = v*v*(3-2*v);
         auto ww = w*w*(3-2*w);
@@ -77,7 +77,7 @@ public:
         delete[] perm_z;
     }
 
-    double noise(const point3& p) const {
+    float noise(const point3& p) const {
         auto u = p.x() - floor(p.x());
         auto v = p.y() - floor(p.y());
         auto w = p.z() - floor(p.z());
@@ -99,7 +99,7 @@ public:
         return perlin_interp(c, u, v, w);
     }
 
-    double turb(const point3& p, int depth) const {
+    float turb(const point3& p, int depth) const {
         auto accum = 0.0;
         auto temp_p = p;
         auto weight = 1.0;

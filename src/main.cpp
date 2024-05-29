@@ -261,7 +261,7 @@ void custom3() {
 }
 
 int main() {
-    switch (5) {
+    switch (3) {
         case 1: custom();  break;
         case 2: checkered_spheres(); break;
         case 3: perlin(); break;

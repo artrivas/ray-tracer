@@ -16,19 +16,19 @@
 
 class camera {
 public:
-    double aspect_ratio = 1.0;  // Ratio of image width over height
+    float aspect_ratio = 1.0;  // Ratio of image width over height
     int    image_width  = 100;  // Rendered image width in pixel count
     int    samples_per_pixel = 10;   // Count of random samples for each pixel
     int    max_depth = 10;  // Maximum number of ray bounces into scene
     color  background;               // Scene background color
 
-    double vfov = 90;  // Vertical view angle (field of view)
+    float vfov = 90;  // Vertical view angle (field of view)
     point3 lookfrom = point3(0,0,0);   // Point camera is looking from
     point3 lookat   = point3(0,0,-1);  // Point camera is looking at
     vec3   vup      = vec3(0,1,0);     // Camera-relative "up" direction
 
-    double defocus_angle = 0;  // Variation angle of rays through each pixel
-    double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
+    float defocus_angle = 0;  // Variation angle of rays through each pixel
+    float focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
     void render(hittable& world) {
         initialize();
@@ -66,7 +66,7 @@ private:
     std::ofstream file;
 
     int    image_height;   // Rendered image height
-    double pixel_samples_scale;  // Color scale factor for a sum of pixel samples
+    float pixel_samples_scale;  // Color scale factor for a sum of pixel samples
     point3 center;         // Camera center
     point3 pixel00_loc;    // Location of pixel 0, 0
     vec3   pixel_delta_u;  // Offset to pixel to the right
@@ -90,7 +90,7 @@ private:
 
         // Viewport width < 1 ok since they are in a continuous space
         auto viewport_height = 2 * h * focus_dist;
-        auto viewport_width = viewport_height * (double(image_width)/image_height);
+        auto viewport_width = viewport_height * ((image_width)/image_height);
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
         w = unit_vector(lookfrom - lookat);
@@ -127,7 +127,7 @@ private:
         auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
         auto ray_direction = pixel_sample - ray_origin;
 
-        auto ray_time = random_double(); // generar un tiempo aleatorio entre [0,1)
+        auto ray_time = random_float(); // generar un tiempo aleatorio entre [0,1)
 
 
         return ray(ray_origin, ray_direction,ray_time);
@@ -135,7 +135,7 @@ private:
 
     vec3 sample_square() const {
         // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
-        return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+        return vec3(random_float() - 0.5, random_float() - 0.5, 0);
     }
 
     point3 defocus_disk_sample() const {
