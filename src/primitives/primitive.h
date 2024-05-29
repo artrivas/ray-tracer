@@ -6,6 +6,7 @@
 #define RAYTRACING_WEEKEND_PRIMITIVE_H
 
 #include "../hittable/hitabble.h"
+#include <array>
 
 class primitive {
 public:
