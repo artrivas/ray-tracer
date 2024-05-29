@@ -84,7 +84,7 @@ void perlin() {
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
     cam.samples_per_pixel = 100;
-    cam.max_depth         = 3;
+    cam.max_depth         = 50;
     cam.background        = color(0.70, 0.80, 1.00);
 
     cam.vfov     = 20;
