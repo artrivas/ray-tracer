@@ -50,6 +50,7 @@ private:
     point3 origin{0, 0, 0};
     float resize_factor = 1;
     std::vector<metadata_triangle> meta;
+    shared_ptr<material> default_mat;
 
     std::unordered_map<string, shared_ptr<textureData>> textures;
     filesystem::path work_dir;
@@ -90,7 +91,8 @@ public:
     tinyobj::attrib_t attrib;
     vector<tinyobj::material_t> materials;
 
-    mesh(const std::string &filename) {
+    mesh(const std::string &filename, const shared_ptr<material>& mati = make_shared<lambertian>(point3(1, 0.5, 0.5))):
+    default_mat(mati) {
         this->work_dir = filesystem::path(filename).parent_path();
         vector<tinyobj::shape_t> shapes;
         {
@@ -139,7 +141,7 @@ public:
 
     void set_material(hit_record& rec, const unsigned int& primID, const float& u, const float& v) override {
         auto triangle = meta.at(primID);
-        if (triangle.vertex[0].texcoord_index != -1) {
+        if (triangle.vertex[0].texcoord_index != -1 and this->textures.size() != 0) {
                 const float z = 1 - u - v;
                 auto t1u = attrib.texcoords.at(2*triangle.vertex[0].texcoord_index);
                 auto t1v = attrib.texcoords.at(2*triangle.vertex[0].texcoord_index + 1);
@@ -160,7 +162,7 @@ public:
             rec.mat = make_shared<lambertian>(color(c[0], c[1], c[2]));
         }
         else {
-            rec.mat = make_shared<lambertian>(color(1, 0.5, .5));
+            rec.mat = default_mat;
         }
     }
 
