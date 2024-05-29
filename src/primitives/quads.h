@@ -14,11 +14,8 @@ private:
     point3 origin;
     point3 u, v;
 public:
-    quad(const point3& Q, const vec3& u, const vec3& v, const shared_ptr<material>& mat) : mat(mat) {
-        this->origin = Q;
-        this->u = u;
-        this->v = v;
-    }
+    quad(const point3& Q, const vec3& u, const vec3& v, const shared_ptr<material>& mat) : mat(mat), origin(Q), u(u),
+   v(v) {}
 
     void set_material(hit_record& rec, const unsigned int& primID, const float& u, const float& v) override  {
         rec.mat = this->mat;
