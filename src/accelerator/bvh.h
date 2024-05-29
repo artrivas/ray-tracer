@@ -27,14 +27,8 @@ struct bvhTree {
         auto geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
 
-//        rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3,sizeof(float)*3,
-//                                vertices.size()/3);
-//        auto* vertex_buffer = (float*) rtcGetGeometryBufferData(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0);
-//        std::copy(vertices.begin(), vertices.end(), vertex_buffer);
-        rtcSetSharedGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, vertices.data(),
+       rtcSetSharedGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, vertices.data(),
                                    0, sizeof(float)*3, vertices.size()/3);
-//        rtcSetSharedGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, index.data(), 0, sizeof
-//        (unsigned int)*3, index.size()/3);
         rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3,sizeof(unsigned int)
         *3, index.size()/3);
         auto* index_buffer = (unsigned int*) rtcGetGeometryBufferData(geom, RTCBufferType::RTC_BUFFER_TYPE_INDEX, 0);
@@ -70,6 +64,7 @@ struct bvhTree {
                                                                  RTC_FORMAT_UINT4, sizeof(unsigned int) * 4, 1);
         copy(indices.begin(), indices.end(), p_index);
 
+        rtcCommitGeometry(geom);
         unsigned int id = rtcAttachGeometry(scene, geom);
         rtcReleaseGeometry(geom);
         return id;
