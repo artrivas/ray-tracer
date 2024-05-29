@@ -6,66 +6,37 @@
 #define RAYTRACING_WEEKEND_QUADS_H
 
 #include "../rtweekend.h"
+#include "primitive.h"
 
-#include "../hittable/hitabble.h"
-
-class quad : public hittable {
+class quad : public primitive {
 private:
-    point3 Q;
-    vec3 u, v;
-    vec3 w;
     shared_ptr<material> mat;
-    vec3 normal;
-    double D;
+    point3 origin;
+    point3 u, v;
 public:
-    quad(const point3& Q, const vec3& u, const vec3& v, shared_ptr<material> mat) : Q(Q), u(u), v(v), mat(mat) {
-        auto n = cross(u, v);
-        normal = unit_vector(n);
-        D = dot(normal, Q);
-        w = n / dot(n,n);
+    quad(const point3& Q, const vec3& u, const vec3& v, const shared_ptr<material>& mat) : mat(mat) {
+        this->origin = Q;
+        this->u = u;
+        this->v = v;
     }
 
-    virtual bool is_interior(double a, double b, hit_record& rec) const {
-        interval unit_interval = interval(0, 1);
-
-        if (!unit_interval.contains(a) || !unit_interval.contains(b))
-            return false;
-
-        rec.u = a;
-        rec.v = b;
-        return true;
+    void set_material(hit_record& rec, const unsigned int& primID, const float& u, const float& v) override  {
+        rec.mat = this->mat;
     }
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) override {
-        auto denom = dot(normal, r.direction());
+    std::array<std::array<float, 3>, 4> get_quad() {
+        auto p1 = origin + u;
+        auto p2 = origin + v;
+        auto p3 = origin + u + v;
 
-        if (fabs(denom) < 1e-8)
-            return false;
+        std::array<std::array<float, 3>, 4> ans{};
+        ans[0] = {static_cast<float>(origin.x()), static_cast<float>(origin.y()), static_cast<float>(origin.z())};
+        ans[1] = {static_cast<float>(p1.x()), static_cast<float>(p1.y()), static_cast<float>(p1.z())};
+        ans[2] = {static_cast<float>(p3.x()), static_cast<float>(p3.y()), static_cast<float>(p3.z())};
+        ans[3] = {static_cast<float>(p2.x()), static_cast<float>(p2.y()), static_cast<float>(p2.z())};
 
-        auto t = (D - dot(normal, r.origin())) / denom;
-        if (!ray_t.contains(t)) {
-            return false;
-        }
-
-
-        auto intersection = r.at(t);
-        vec3 planar_hitpt_vector = intersection - Q;
-        auto alpha = dot(w, cross(planar_hitpt_vector, v));
-        auto beta = dot(w, cross(u, planar_hitpt_vector));
-
-        if (!is_interior(alpha, beta, rec)) {
-            return false;
-        }
-
-        rec.t = t;
-        rec.p = intersection;
-        rec.mat = mat;
-        rec.set_face_normal(r, normal);
-
-        return true;
+        return ans;
     }
-
-
 };
 
 #endif //RAYTRACING_WEEKEND_QUADS_H

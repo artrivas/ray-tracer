@@ -13,7 +13,7 @@
 class sphere: public primitive{
 public:
     point3 center;
-    double radius;
+    float radius;
     shared_ptr<material> mat;
 
     sphere(const point3& center, double radius, const shared_ptr<material>& mat): radius(fmax(0, radius)),

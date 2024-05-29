@@ -51,9 +51,25 @@ struct bvhTree {
 
         rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT4, sizeof(float)*4, 1);
         float* t = (float*)rtcGetGeometryBufferData(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0);
-        memcpy(t, sphere.data(), sizeof(float)*4);
+        copy(sphere.begin(), sphere.end(), t);  
 
         rtcCommitGeometry(geom);
+        unsigned int id = rtcAttachGeometry(scene, geom);
+        rtcReleaseGeometry(geom);
+        return id;
+    }
+
+    unsigned int add_quad(const array<unsigned int, 4>& indices, const array<array<float, 3>, 4>& vertices) const {
+        auto geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_QUAD);
+
+        auto *t = (array<float, 3> *) rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_VERTEX, 0,
+                                                              RTC_FORMAT_FLOAT3, sizeof(float) * 3, 4);
+        copy(vertices.begin(), vertices.end(), t);
+
+        auto *p_index = (unsigned int *) rtcSetNewGeometryBuffer(geom, RTCBufferType::RTC_BUFFER_TYPE_INDEX, 0,
+                                                                 RTC_FORMAT_UINT4, sizeof(unsigned int) * 4, 1);
+        copy(indices.begin(), indices.end(), p_index);
+
         unsigned int id = rtcAttachGeometry(scene, geom);
         rtcReleaseGeometry(geom);
         return id;
