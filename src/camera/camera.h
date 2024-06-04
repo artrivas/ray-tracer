@@ -11,7 +11,6 @@
 #include "../material/material.h"
 
 #include <fstream>
-#include <omp.h>
 #include <vector>
 
 class camera {
@@ -30,7 +29,7 @@ public:
     float defocus_angle = 0;  // Variation angle of rays through each pixel
     float focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
-    void render(hittable& world) {
+    void render(const hittable& world) {
         initialize();
 
         // Render
@@ -204,7 +203,7 @@ private:
         return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
     }
 
-    [[nodiscard]] color ray_color(const ray& r, int depth, hittable& world) {
+    [[nodiscard]] color ray_color(const ray& r, int depth, const hittable& world) const {
         // If we pass ray bounce limit, no more light gathered.
         if (depth <= 0) {
             return {0,0,0};

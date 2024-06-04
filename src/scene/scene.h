@@ -39,7 +39,7 @@ public:
         cout << id << endl;
         objs.push_back(obj);
     }
-    bool hit(const ray& r, interval ray_t, hit_record& rec) override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
         RTCRayHit ray{};
         ray.ray.org_x = r.origin().x();
         ray.ray.org_y = r.origin().y();

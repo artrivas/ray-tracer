@@ -15,17 +15,20 @@
 #include <unordered_map>
 #include "tiny_obj_loader.h"
 #include "primitive.h"
+#include "../material/material.h"
 
 using namespace std;
+
 
 class mesh: public primitive {
 private:
     struct metadata_triangle {
         tinyobj::index_t vertex[3];
-        int material_id;
+        int id_mat;
 
-        metadata_triangle(tinyobj::index_t v1, tinyobj::index_t v2, tinyobj::index_t v3, const int mat_id):
-        material_id(mat_id) {
+        metadata_triangle(tinyobj::index_t v1, tinyobj::index_t v2, tinyobj::index_t v3, const
+        int& mat_id):
+        id_mat(mat_id) {
             vertex[0] = v1;
             vertex[1] = v2;
             vertex[2] = v3;
@@ -60,11 +63,11 @@ private:
         for (auto& shape: shapes) {
             for (int i = 0; i < shape.mesh.indices.size()/3; i++) {
                 meta.emplace_back(shape.mesh.indices.at(3*i), shape.mesh.indices.at(3*i+1), shape.mesh.indices.at
-                (3*i+2), shape.mesh.material_ids.at(i));
+                (3*i+2),  shape.mesh.material_ids.at(i));
             }
         }
-
-        for (auto& material: materials) {
+        // TODO: support textures
+        for (auto& material: all_material_info) {
             if (!material.diffuse_texname.empty() and this->textures.find(material.diffuse_texname) == this->textures
             .end()) {
                 this->textures.insert({material.diffuse_texname, make_shared<textureData>(this->work_dir / material
@@ -77,6 +80,37 @@ private:
         }
     }
 
+
+    shared_ptr<material> build_material(const tinyobj::material_t& mat) {
+        const float specularThreshold = 0.5f;  // Umbral para considerar un material como metálico
+        const float shininessThreshold = 50.0f; // Umbral de brillo para considerar un material como metálico
+        const float emissionThreshold = 0.1f;  // Umbral para considerar un material como emisivo
+
+        bool isLambertian = (mat.specular[0] < specularThreshold &&
+                             mat.specular[1] < specularThreshold &&
+                             mat.specular[2] < specularThreshold &&
+                             mat.shininess < shininessThreshold);
+
+        bool isEmissive = (mat.emission[0] > emissionThreshold ||
+                           mat.emission[1] > emissionThreshold ||
+                           mat.emission[2] > emissionThreshold);
+
+        bool isDielectric = (mat.ior > 1.0f);  // Índice de refracción mayor que el aire
+        if (isEmissive) {
+            return make_shared<diffuse_light>(color(mat.emission));
+        }
+        if (isDielectric) {
+            return make_shared<dielectric>(mat.ior);
+        }
+        if (isLambertian) {
+            return make_shared<lambertian>(color(mat.diffuse[0]*mat.ambient[0], mat.diffuse[1]*mat.ambient[1], mat
+            .diffuse[2]*mat.ambient[2]));
+        }
+        else {
+            return make_shared<metal>(color(mat.diffuse[0]*mat.ambient[0], mat.diffuse[1]*mat.ambient[1], mat.diffuse[2]*mat.ambient[2]), mat.specular[0]);
+        }
+    }
+
     void _log_mesh(const vector<tinyobj::shape_t>& shapes) const {
         clog << "Loaded OBJ" << endl;
         std::clog << "shapes: " << shapes.size() << std::endl;
@@ -86,10 +120,16 @@ private:
         }
         clog << "materials: " << materials.size() << endl;
     }
-
+    void build_materials(const vector<tinyobj::material_t>& mats) {
+        this->materials.reserve(mats.size());
+        for (int i = 0; i < mats.size(); i++) {
+            materials.emplace_back(build_material(mats.at(i)));
+        }
+    }
 public:
     tinyobj::attrib_t attrib;
-    vector<tinyobj::material_t> materials;
+    vector<shared_ptr<struct material>> materials;
+    vector<tinyobj::material_t> all_material_info;
 
     mesh(const std::string &filename, const shared_ptr<material>& mati = make_shared<lambertian>(point3(1, 0.5, 0.5))):
     default_mat(mati) {
@@ -97,7 +137,7 @@ public:
         vector<tinyobj::shape_t> shapes;
         {
             std::string err;
-            bool status = tinyobj::LoadObj(&this->attrib, &shapes, &materials, nullptr, &err,
+            bool status = tinyobj::LoadObj(&this->attrib, &shapes, &all_material_info, nullptr, &err,
                                            filename
                                                    .c_str(), this->work_dir.c_str());
             if (!err.empty()) {
@@ -106,6 +146,7 @@ public:
             }
             if (!status) exit(1);
         }
+        build_materials(all_material_info);
         _log_mesh(shapes);
         initialize(shapes);
     }
@@ -153,16 +194,12 @@ public:
                 auto t3v = attrib.texcoords.at(2*triangle.vertex[2].texcoord_index + 1);
                 const auto ansu = t1u*u + t2u*v + t3u*z;
                 const auto ansv = t1v*u + t2v*v + t3v*z;
-                const auto c = materials.at(triangle.material_id).diffuse_texname;
+                const auto c = all_material_info.at(triangle.id_mat).diffuse_texname;
                 const auto diffuse = this->get_color(c, ansu, ansv);
                 rec.mat = make_shared<lambertian>(diffuse);
             }
-        else if (triangle.material_id != -1) {
-            auto c = materials.at(triangle.material_id).diffuse;
-            rec.mat = make_shared<lambertian>(color(c[0], c[1], c[2]));
-        }
         else {
-            rec.mat = default_mat;
+            rec.mat = materials.at(triangle.id_mat);
         }
     }
 
