@@ -31,7 +31,7 @@ public:
     float focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
     void show(const hittable& world) {
-
+        initialize();
         // Render
         std::vector<std::vector<vec3>> image(image_height, std::vector<vec3>(image_width));
 
