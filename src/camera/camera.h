@@ -9,6 +9,7 @@
 
 #include "../hittable/hitabble.h"
 #include "../material/material.h"
+#include "raylib.h"
 
 #include <fstream>
 #include <vector>
@@ -29,12 +30,34 @@ public:
     float defocus_angle = 0;  // Variation angle of rays through each pixel
     float focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
-    void render(const hittable& world) {
-        initialize();
+    void show(const hittable& world) {
 
         // Render
         std::vector<std::vector<vec3>> image(image_height, std::vector<vec3>(image_width));
 
+        InitWindow(image_width, image_height, "Viewer");
+        SetTargetFPS(60);
+        while (!WindowShouldClose()) {
+            initialize();
+            _render(world, image);
+            if (IsKeyDown(KEY_RIGHT)) { lookfrom += {1, 0, 0};}
+            if (IsKeyDown(KEY_LEFT)) lookfrom += {-1, 0, 0};
+            if (IsKeyDown(KEY_UP)) lookfrom += {0, 0, 1};
+            if (IsKeyDown(KEY_DOWN)) lookfrom += {0, 0, -1};
+
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+            for (int y = 0; y < image_height; y++) {
+                for (int x = 0; x < image_width; x++) {
+                    DrawPixel(x, y, ColorFromNormalized({image[y][x].e[0], image[y][x].e[1], image[y][x].e[2], 1}));
+                }
+            }
+            EndDrawing();
+        }
+        CloseWindow();
+    }
+
+    void _render(const hittable& world, std::vector<std::vector<vec3>>& image) {
         for (int j = 0; j <image_height; ++j) {
             for (int i = 0; i < image_width; ++i) {
                 color pixel_color(0,0,0);
@@ -45,6 +68,16 @@ public:
                 image[j][i] = pixel_samples_scale * pixel_color;
             }
         }
+    }
+
+    void render(const hittable& world) {
+        initialize();
+
+        // Render
+        std::vector<std::vector<vec3>> image(image_height, std::vector<vec3>(image_width));
+
+        _render(world, image);
+
         std::clog<<"\rDone.        \n";
 
         // Save image

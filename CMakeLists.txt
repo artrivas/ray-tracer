@@ -9,6 +9,10 @@ add_library(tiny_obj_loader STATIC src/ext/tiny_obj_loader/tiny_obj_loader.cc)
 target_include_directories(tiny_obj_loader PUBLIC ${CMAKE_SOURCE_DIR}/src/ext/tiny_obj_loader)
 find_package(embree 4 REQUIRED)
 
+set(RAYLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/ext/raylib-5.0/include)
+set(RAYLIB_LIB_DIR ${CMAKE_SOURCE_DIR}/src/ext/raylib-5.0/lib)
+
+
 add_executable(raytracing_weekend src/main.cpp
         src/vec3/vec3.h
         src/color/color.h
@@ -28,9 +32,14 @@ add_executable(raytracing_weekend src/main.cpp
         src/primitives/sphere.h
 )
 target_link_libraries(raytracing_weekend PRIVATE tiny_obj_loader embree)
-
 target_link_libraries(raytracing_weekend PUBLIC stdc++)
 target_link_libraries(raytracing_weekend PUBLIC m)
 
+target_include_directories(raytracing_weekend PRIVATE ${RAYLIB_INCLUDE_DIR})
+target_link_directories(raytracing_weekend PRIVATE ${RAYLIB_LIB_DIR})
+target_link_libraries(raytracing_weekend PRIVATE raylib)
+
 target_compile_options(raytracing_weekend PRIVATE ${OpenMP_CXX_FLAGS})
 target_link_libraries(raytracing_weekend PRIVATE OpenMP::OpenMP_CXX)
+
+target_link_libraries(raytracing_weekend PRIVATE GL m pthread dl rt X11)
