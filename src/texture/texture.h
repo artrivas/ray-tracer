@@ -87,14 +87,13 @@ public:
 
     color value(const float& u, const float& v, const point3& p) const override {
         color c;
-        const int _u = u*this->width;
-        const int _v = this->height - v*this->height;
+        const int _u = static_cast<int>(u*width);
+        const int _v = static_cast<int>(height*(1 - v));
 
-        const int index = (_v*this->height + _u)*this->channels;
-        c.e[0] = this->imageData[index] / 255.;
-        c.e[1] = this->imageData[index + 1] / 255.;
-        c.e[2] = this->imageData[index + 2] / 255.;
-        std::cout << c << std::endl;
+        const int index = (_v*this->width + _u)*this->channels;
+        c.e[0] = imageData[index] / 255.;
+        c.e[1] = imageData[index + 1] / 255.;
+        c.e[2] = imageData[index + 2] / 255.;
         return c;
     }
 
