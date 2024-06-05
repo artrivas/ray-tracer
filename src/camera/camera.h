@@ -41,7 +41,6 @@ public:
         unsigned char* image = new unsigned char[image_width * image_height * 4];
 
         InitWindow(image_width, image_height, "Viewer");
-        SetTargetFPS(60);
         while (!WindowShouldClose()) {
             initialize();
             _render(world, image);
