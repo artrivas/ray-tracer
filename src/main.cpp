@@ -315,18 +315,18 @@ void dielectric_scene() {
 void background_scene() {
     scene world;
 
-    auto text_sphere = make_shared<texture_image>("../images/red.png");
+    auto text_sphere = make_shared<texture_image>("../images/golden_bay_2k.hdr");
     auto pertext = make_shared<noise_texture>(4);
     auto checker = make_shared<checker_texture>(0.32, color(.0, .0, .1), color(.9, .9, .9));
 
-    world.add_sphere(make_shared<sphere>(point3( 0.0, 0.0, 0.0), 10.0, make_shared<lambertian>(text_sphere)));
+    world.add_sphere(make_shared<sphere>(point3( 0.0, 0.0, 0.0), 100.0, make_shared<diffuse_light>(text_sphere)));
     world.build();
 
     camera cam;
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
+    cam.samples_per_pixel = 1;
 
     cam.max_depth         = 3;
     cam.background        = color(1.00, 1.00, 1.00);
@@ -334,8 +334,8 @@ void background_scene() {
     cam.lookfrom = point3(0,0,20);
     cam.lookat   = point3(0,0,0);
 
-    //cam.show(world);
-   cam.render(world);
+    cam.show(world);
+//   cam.render(world);
 //    cam.render_montecarlo(world);
 }
 
