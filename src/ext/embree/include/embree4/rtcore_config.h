@@ -4,7 +4,7 @@
 #pragma once
 
 #if !defined(EMBREE_SYCL_SUPPORT)
-/* #undef EMBREE_SYCL_SUPPORT */
+#define EMBREE_SYCL_SUPPORT
 #endif
 
 #define RTC_VERSION_MAJOR 4
