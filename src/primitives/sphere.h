@@ -14,12 +14,22 @@ class sphere: public primitive{
 public:
     point3 center;
     float radius;
+    //17220108
     shared_ptr<material> mat;
 
     sphere(const point3& center, float radius, const shared_ptr<material>& mat): center(center), radius(fmax(0, radius)),
                                                                                   mat(mat){}
 
     void set_material(hit_record& rec, const unsigned int& primID, const float& u, const float& v) override {
+        auto p = (rec.p - center)/radius;
+
+        auto theta = asin(- p.y());
+        auto phi = atan2(-p.z(), p.x()) + pi;
+        rec.u = (phi) / (2*pi);
+        rec.v = theta / (pi);
+
+        rec.u = 0.01;
+        rec.v = 0.02;
         rec.mat = this->mat;
     }
 
