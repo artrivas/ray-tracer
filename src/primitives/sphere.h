@@ -22,14 +22,32 @@ public:
 
     void set_material(hit_record& rec, const unsigned int& primID, const float& u, const float& v) override {
         auto p = (rec.p - center)/radius;
+        float theta, phi;
+        if (p.z() > 0) {
+            theta = atan(sqrt(p.x()*p.x() + p.y()*p.y())/p.z());
+        }
+        else if (p.z() == 0) {
+            theta = pi/2;
+        }
+        else {
+            theta = pi + atan(sqrt(p.x()*p.x() + p.y()*p.y())/p.z());
+        }
 
-        auto theta = asin(- p.y());
-        auto phi = atan2(-p.z(), p.x()) + pi;
+        if (p.x() > 0 and p.y() > 0) {
+            phi = atan(p.y()/p.x());
+        }
+        else if (p.x() > 0 and p.y() < 0) {
+            phi = 2*pi +atan(p.y()/p.x());
+        }
+        else if (p.x() == 0) {
+            phi = pi/2*(p.y()/abs(p.y()));
+        }
+        else {
+            phi = pi + atan(p.y()/p.x());
+        }
         rec.u = (phi) / (2*pi);
         rec.v = theta / (pi);
 
-        rec.u = 0.01;
-        rec.v = 0.02;
         rec.mat = this->mat;
     }
 
