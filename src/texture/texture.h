@@ -79,7 +79,7 @@ class texture_image: public texture {
     int width{}, height{}, channels{};
 public:
     texture_image(const std::string& path) {
-        this->imageData = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb);
+        this->imageData = stbi_load(path.c_str(), &width, &height, &channels, STBI_ORDER_RGB);
         if (!imageData) {
             std::cerr << "Error: Can't load the image " << path << std::endl;
         }
@@ -94,6 +94,7 @@ public:
         c.e[0] = this->imageData[index] / 255.;
         c.e[1] = this->imageData[index + 1] / 255.;
         c.e[2] = this->imageData[index + 2] / 255.;
+        std::cout << c << std::endl;
         return c;
     }
 
