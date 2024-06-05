@@ -5,12 +5,17 @@
 #ifndef RAYTRACING_WEEKEND_CAMERA_H
 #define RAYTRACING_WEEKEND_CAMERA_H
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include "../rtweekend.h"
 
 #include "../hittable/hitabble.h"
 #include "../material/material.h"
 #include "raylib.h"
 
+#include "../ext/stb/stb_image_write.h"
+
+#include <chrono>
 #include <fstream>
 #include <vector>
 
@@ -33,7 +38,7 @@ public:
     void show(const hittable& world) {
         initialize();
         // Render
-        std::vector<std::vector<vec3>> image(image_height, std::vector<vec3>(image_width));
+        unsigned char* image = new unsigned char[image_width * image_height * 4];
 
         InitWindow(image_width, image_height, "Viewer");
         SetTargetFPS(60);
@@ -49,23 +54,31 @@ public:
             ClearBackground(RAYWHITE);
             for (int y = 0; y < image_height; y++) {
                 for (int x = 0; x < image_width; x++) {
-                    DrawPixel(x, y, ColorFromNormalized({image[y][x].e[0], image[y][x].e[1], image[y][x].e[2], 1}));
+                    auto idx  = (y*image_width + x)*4;
+                    DrawPixel(x, y, Color(image[idx], image[idx+1], image[idx+2], image[idx+3]));
                 }
             }
             EndDrawing();
         }
         CloseWindow();
+        delete[] image;
     }
 
-    void _render(const hittable& world, std::vector<std::vector<vec3>>& image) {
+    void _render(const hittable& world, unsigned char*& image) {
+
+        int remain = image_height * image_width;
+
         for (int j = 0; j <image_height; ++j) {
             for (int i = 0; i < image_width; ++i) {
                 color pixel_color(0,0,0);
+                std::cerr << "\rScanlines remaining: " << remain << ' ' << std::flush;
+
                 for (int sample = 0; sample < samples_per_pixel; sample++) {
                     ray r = get_ray(i, j);
                     pixel_color += ray_color(r, max_depth, world);
                 }
-                image[j][i] = pixel_samples_scale * pixel_color;
+                write_color(image, i, j, image_width, pixel_color, samples_per_pixel);
+                remain--;
             }
         }
     }
@@ -74,23 +87,14 @@ public:
         initialize();
 
         // Render
-        std::vector<std::vector<vec3>> image(image_height, std::vector<vec3>(image_width));
+        unsigned char* image = new unsigned char[image_width * image_height * 4];
 
         _render(world, image);
 
         std::clog<<"\rDone.        \n";
 
-        // Save image
-        file = std::ofstream("image.ppm");
-        file << "P3\n" << image_width << ' '<< image_height<<"\n255\n";
-
-        for (int j = 0; j < image_height; j++) {
-            for (int i = 0; i < image_width; i++) {
-                write_color(file, image[j][i]);
-            }
-        }
-
-        file.close();
+        stbi_write_png("output.png", image_width, image_height, 4, image, image_width*4);
+        delete[] image;
     }
 
     void render_montecarlo(hittable &world)

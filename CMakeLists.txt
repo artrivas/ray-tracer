@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 project(raytracing_weekend)
 
-find_package(OpenMP REQUIRED)
 set(CMAKE_CXX_STANDARD 20)
 set(embree_DIR ${CMAKE_SOURCE_DIR}/src/ext/embree/lib/cmake/embree-4.3.1)
 
@@ -37,9 +36,8 @@ target_link_libraries(raytracing_weekend PUBLIC m)
 
 target_include_directories(raytracing_weekend PRIVATE ${RAYLIB_INCLUDE_DIR})
 target_link_directories(raytracing_weekend PRIVATE ${RAYLIB_LIB_DIR})
+
 target_link_libraries(raytracing_weekend PRIVATE raylib)
 
-target_compile_options(raytracing_weekend PRIVATE ${OpenMP_CXX_FLAGS})
-target_link_libraries(raytracing_weekend PRIVATE OpenMP::OpenMP_CXX)
 
 target_link_libraries(raytracing_weekend PRIVATE GL m pthread dl rt X11)
