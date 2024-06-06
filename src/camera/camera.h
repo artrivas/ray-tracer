@@ -100,11 +100,7 @@ public:
     {
         initialize();
 
-        std::cout << "P3\n"
-                  << image_width << ' ' << image_height << "\n255\n";
-
-        file = std::ofstream("image.ppm");
-        file << "P3\n" << image_width << ' '<< image_height<<"\n255\n";
+        unsigned char* image = new unsigned char[image_width * image_height * 4];
 
         for (int j = 0; j < image_height; j++)
         {
@@ -120,13 +116,12 @@ public:
                         pixel_color += ray_color_montecarlo(r, max_depth, world);
                     }
                 }
-                write_color(file, pixel_samples_scale * pixel_color);
+                write_color(image, i, j, image_width, pixel_color, samples_per_pixel);
             }
         }
 
-        file.close();
-
-        std::clog << "\rDone.                 \n";
+        stbi_write_png("output_montecarlo.png", image_width, image_height, 4, image, image_width*4);
+        delete[] image;
     }
 
 private:

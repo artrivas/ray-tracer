@@ -50,7 +50,7 @@ public:
         return true;
     }
 
-    float scattering_pdf(const ray &r_in, const hit_record &rec, const ray &scattered) const
+    float scattering_pdf(const ray &r_in, const hit_record &rec, const ray &scattered) const override
     {
         auto cos_theta = dot(rec.normal, unit_vector(scattered.direction()));
         return cos_theta < 0 ? 0 : cos_theta / pi;
@@ -71,6 +71,12 @@ public:
         scattered = ray(rec.p + rec.normal*1e-4, reflected, r_in.time());
         attenuation = albedo;
         return (dot(scattered.direction(), rec.normal) > 0);
+    }
+
+    float scattering_pdf(const ray &r_in, const hit_record &rec, const ray &scattered) const override
+    {
+        auto cos_theta = dot(rec.normal, unit_vector(scattered.direction()));
+        return cos_theta < 0 ? 0 : cos_theta / pi;
     }
 };
 
@@ -111,6 +117,11 @@ public:
         scattered = ray(rec.p - rec.normal*1e-4, direction, r_in.time());
         return true;
     }
+
+    float scattering_pdf(const ray &r_in, const hit_record &rec, const ray &scattered) const override
+    {
+        return 1;
+    }
 };
 
 class diffuse_light : public material {
@@ -128,7 +139,6 @@ public:
     ) override {
         return false;
     }
-
 
 private:
     shared_ptr<texture> tex;

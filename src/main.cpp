@@ -22,28 +22,32 @@ void custom() {
 //    world.add_sphere(make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
     world.add_obj(make_shared<mesh>(t));
 
-    auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
-    world.add_sphere(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(checker)));
+//    auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
+//    world.add_sphere(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(checker)));
     world.build();
 
     camera cam;
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 1;
+    cam.samples_per_pixel = 100;
     cam.max_depth         = 3;
     cam.background        = color(0.70, 0.80, 1.00);
 
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 800;
+    cam.samples_per_pixel = 200;
+    cam.max_depth         = 3;
+    cam.background        = color(1, 1, 1);
+
     cam.vfov     = 20;
-    cam.lookfrom = point3(13,2,3);
+    cam.lookfrom = point3(13,2,30);
     cam.lookat   = point3(0,0,0);
     cam.vup      = vec3(0,1,0);
 
-    cam.defocus_angle = 0.6;
-    cam.focus_dist    = 10.0;
-
-    cam.show(world);
-//    cam.render(world);
+//    cam.show(world);
+    cam.render(world);
+    cam.render_montecarlo(world);
 }
 
 void checkered_spheres() {
@@ -334,13 +338,13 @@ void background_scene() {
     cam.lookfrom = point3(0,0,20);
     cam.lookat   = point3(0,0,0);
 
-    cam.show(world);
-//   cam.render(world);
+//    cam.show(world);
+   cam.render(world);
 //    cam.render_montecarlo(world);
 }
 
 int main() {
-    switch (11) {
+    switch (1) {
         case 1: custom();  break;
         case 2: checkered_spheres(); break;
         case 3: perlin(); break;
