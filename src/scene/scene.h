@@ -57,14 +57,14 @@ public:
         this->bvh->hit(ray, u, v);
         if (ray.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
             auto t = objs.at(ray.hit.geomID);
-            t->set_material(rec, ray.hit.primID, u, v);
             rec.t = ray.ray.tfar;
-
-            rec.set_face_normal(r, unit_vector(vec3(ray.hit.Ng_x, ray.hit.Ng_y, ray.hit.Ng_z)));
+            const auto normal = unit_vector(vec3(ray.hit.Ng_x, ray.hit.Ng_y, ray.hit.Ng_z));
+            rec.set_face_normal(r, normal);
 
             // Displacement improves black acne in image. Prevents origin of scattered ray to start below the surface
             // because of floating point precision when calculating the point p.
             rec.p = r.at(rec.t);
+            t->set_material(rec, ray.hit.primID, u, v);
             return true;
         }
         return false;

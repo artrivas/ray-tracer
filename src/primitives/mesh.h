@@ -171,7 +171,7 @@ public:
             rec.u = t1u * u + t2u * v + t3u * z;
             rec.v = t1v * u + t2v * v + t3v * z;
         }
-        rec.mat = materials.at(triangle.id_mat);
+        rec.mat = triangle.id_mat == -1? default_mat: materials.at(triangle.id_mat);
     }
 
     vector<unsigned int> get_indices() {

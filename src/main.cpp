@@ -9,19 +9,17 @@
 
 void custom() {
     scene world;
-    auto t = mesh("../samples/cat/12221_Cat_v1_l3.obj"); // , {0, 22, -30}
-    t.set_origin({0, 22, -30});
-    t.rescale(0.2);
+    auto t = mesh("../samples/bugatti/bugatti.obj");
 
-    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
-    auto material_left   = make_shared<dielectric>(float(1.50) );
-    auto material_bubble = make_shared<dielectric>(1.00 / 1.50);
-    auto material_right  = make_shared<metal>(color(0.8, 0.6, 0.2), 0.0);
-
-    world.add_sphere(make_shared<sphere>(point3( 0.0,    0.0, -1.2),   0.5, material_center));
-    world.add_sphere(make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.5, material_left));
-    world.add_sphere(make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.4, material_bubble));
-    world.add_sphere(make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
+//    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
+//    auto material_left   = make_shared<dielectric>(float(1.50) );
+//    auto material_bubble = make_shared<dielectric>(1.00 / 1.50);
+//    auto material_right  = make_shared<metal>(color(0.8, 0.6, 0.2), 0.0);
+//
+//    world.add_sphere(make_shared<sphere>(point3( 0.0,    0.0, -1.2),   0.5, material_center));
+//    world.add_sphere(make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.5, material_left));
+//    world.add_sphere(make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.4, material_bubble));
+//    world.add_sphere(make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
     world.add_obj(make_shared<mesh>(t));
 
     auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
@@ -32,7 +30,7 @@ void custom() {
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
+    cam.samples_per_pixel = 1;
     cam.max_depth         = 3;
     cam.background        = color(0.70, 0.80, 1.00);
 
@@ -44,7 +42,8 @@ void custom() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(world);
+    cam.show(world);
+//    cam.render(world);
 }
 
 void checkered_spheres() {
@@ -211,9 +210,9 @@ void custom2() {
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
+    cam.samples_per_pixel = 1;
     cam.max_depth         = 3;
-    cam.background        = color(0.0, 0.0, 0.0);
+    cam.background        = color(1.0, 1.0, 1.0);
 
     cam.vfov     = 20;
     cam.lookfrom = point3(13,2,3);
@@ -223,14 +222,13 @@ void custom2() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(world);
+//    cam.render(world);
+    cam.show(world);
 }
 
 void custom3() {
     scene world;
     auto t = mesh("../samples/Buddha1.obj", make_shared<metal>(color(1.0,0.5,0.0), 0.0)); // , {0, 22, -30}
-    t.set_origin({0, 0, 0});
-    t.rescale(0.1);
 
     world.add_sphere(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(color(1.0,0.0,0.0))));
 
@@ -241,7 +239,7 @@ void custom3() {
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 200;
+    cam.samples_per_pixel = 1;
     cam.max_depth         = 3;
     cam.background        = color(0.7, 0.7, 0.7);
 
@@ -253,7 +251,8 @@ void custom3() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(world);
+    cam.show(world);
+//    cam.render(world);
 //    cam.render_montecarlo(world);
 }
 
@@ -313,8 +312,35 @@ void dielectric_scene() {
 //    cam.render_montecarlo(world);
 }
 
+void background_scene() {
+    scene world;
+
+    auto text_sphere = make_shared<texture_image>("../images/golden_bay_2k.hdr");
+    auto pertext = make_shared<noise_texture>(4);
+    auto checker = make_shared<checker_texture>(0.32, color(.0, .0, .1), color(.9, .9, .9));
+
+    world.add_sphere(make_shared<sphere>(point3( 0.0, 0.0, 0.0), 100.0, make_shared<diffuse_light>(text_sphere)));
+    world.build();
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 1;
+
+    cam.max_depth         = 3;
+    cam.background        = color(1.00, 1.00, 1.00);
+
+    cam.lookfrom = point3(0,0,20);
+    cam.lookat   = point3(0,0,0);
+
+    cam.show(world);
+//   cam.render(world);
+//    cam.render_montecarlo(world);
+}
+
 int main() {
-    switch (9) {
+    switch (11) {
         case 1: custom();  break;
         case 2: checkered_spheres(); break;
         case 3: perlin(); break;
@@ -324,5 +350,7 @@ int main() {
         case 7: custom3(); break;
         case 8: custom4(); break;
         case 9: dielectric_scene(); break;
+        case 10: custom2(); break;
+        case 11: background_scene(); break;
     }
 }

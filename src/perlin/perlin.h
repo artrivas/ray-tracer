@@ -71,7 +71,7 @@ public:
 
     ~perlin() {
         delete[] randvec;
-        delete[] randfloat;
+//        delete[] randfloat;
         delete[] perm_x;
         delete[] perm_y;
         delete[] perm_z;
