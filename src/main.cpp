@@ -30,12 +30,12 @@ void custom() {
 
     cam.aspect_ratio      = 16.0 / 9.0;
     cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
+    cam.samples_per_pixel = 10;
     cam.max_depth         = 3;
     cam.background        = color(0.70, 0.80, 1.00);
 
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 800;
+    cam.image_width       = 1920;
     cam.samples_per_pixel = 200;
     cam.max_depth         = 3;
     cam.background        = color(1, 1, 1);
@@ -46,7 +46,7 @@ void custom() {
     cam.vup      = vec3(0,1,0);
 
 //    cam.show(world);
-    cam.render(world);
+//    cam.render(world);
     cam.render_montecarlo(world);
 }
 

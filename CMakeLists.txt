@@ -7,6 +7,7 @@ set(embree_DIR ${CMAKE_SOURCE_DIR}/src/ext/embree/lib/cmake/embree-4.3.1)
 add_library(tiny_obj_loader STATIC src/ext/tiny_obj_loader/tiny_obj_loader.cc)
 target_include_directories(tiny_obj_loader PUBLIC ${CMAKE_SOURCE_DIR}/src/ext/tiny_obj_loader)
 find_package(embree 4 REQUIRED)
+find_package(TBB REQUIRED)
 
 set(RAYLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/ext/raylib-5.0/include)
 set(RAYLIB_LIB_DIR ${CMAKE_SOURCE_DIR}/src/ext/raylib-5.0/lib)
@@ -38,6 +39,5 @@ target_include_directories(raytracing_weekend PRIVATE ${RAYLIB_INCLUDE_DIR})
 target_link_directories(raytracing_weekend PRIVATE ${RAYLIB_LIB_DIR})
 
 target_link_libraries(raytracing_weekend PRIVATE raylib)
-
-
+target_link_libraries(raytracing_weekend PRIVATE tbb)
 target_link_libraries(raytracing_weekend PRIVATE GL m pthread dl rt X11)

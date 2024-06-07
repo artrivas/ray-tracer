@@ -14,6 +14,7 @@
 #include "raylib.h"
 
 #include "../ext/stb/stb_image_write.h"
+#include "tbb/tbb.h"
 
 #include <chrono>
 #include <fstream>
@@ -62,24 +63,48 @@ public:
         CloseWindow();
         delete[] image;
     }
-
+    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::milliseconds ms;
+    typedef std::chrono::duration<float> fsec;
     void _render(const hittable& world, unsigned char*& image) {
-
+        auto t0 = Time::now();
         int remain = image_height * image_width;
 
-        for (int j = 0; j <image_height; ++j) {
-            for (int i = 0; i < image_width; ++i) {
-                color pixel_color(0,0,0);
-                std::cerr << "\rScanlines remaining: " << remain << ' ' << std::flush;
+//        for (int j = 0; j <image_height; ++j) {
+//            for (int i = 0; i < image_width; ++i) {
+//                color pixel_color(0,0,0);
+//                std::cerr << "\rScanlines remaining: " << remain << ' ' << std::flush;
+//
+//                for (int sample = 0; sample < samples_per_pixel; sample++) {
+//                    ray r = get_ray(i, j);
+//                    pixel_color += ray_color(r, max_depth, world);
+//                }
+//                write_color(image, i, j, image_width, pixel_color, samples_per_pixel);
+//                remain--;
+//            }
+//        }
 
-                for (int sample = 0; sample < samples_per_pixel; sample++) {
-                    ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, max_depth, world);
+        auto render_scanline = [this, &world, image](const
+                tbb::blocked_range<int>&
+                range) {
+            for (int j = range.begin(); j < range.end(); ++j) {
+                for (int i = 0; i < image_width; ++i) {
+                    color pixel_color(0, 0, 0);
+
+                    for (int sample = 0; sample < samples_per_pixel; sample++) {
+                        ray r = get_ray(i, j); // Asumiendo que get_ray es una función que genera un rayo para el pixel (i, j)
+                        pixel_color += ray_color(r, max_depth, world);
+                    }
+                    write_color(image, i, j, image_width, pixel_color, samples_per_pixel);
                 }
-                write_color(image, i, j, image_width, pixel_color, samples_per_pixel);
-                remain--;
             }
-        }
+        };
+
+        // Usar tbb::parallel_for para paralelizar el bucle exterior (sobre las líneas de la imagen)
+        tbb::parallel_for(tbb::blocked_range<int>(0, image_height), render_scanline);
+        auto t1 = Time::now();
+        fsec fs = t1 - t0;
+        std::cout << fs.count() << "s\n";
     }
 
     void render(const hittable& world) {

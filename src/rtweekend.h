@@ -10,6 +10,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <random>
 
 // C++ Std usings
 
@@ -33,7 +34,9 @@ inline float degrees_to_radians(float degrees) {
 
 inline float random_float() {
     // Returns a random real in [0,1).
-    return rand() / (RAND_MAX + 1.0);
+    static thread_local std::mt19937 generator;
+    std::uniform_real_distribution<float> distribution(0, 1);
+    return distribution(generator);
 }
 
 inline float random_float(float min, float max) {
