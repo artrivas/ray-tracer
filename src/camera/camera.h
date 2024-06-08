@@ -44,7 +44,8 @@ public:
         InitWindow(image_width, image_height, "Viewer");
         while (!WindowShouldClose()) {
             initialize();
-            _render(world, image);
+//            _render(world, image);
+            _render_montecarlo(world, image);
             if (IsKeyDown(KEY_RIGHT)) { lookfrom += {1, 0, 0};}
             if (IsKeyDown(KEY_LEFT)) lookfrom += {-1, 0, 0};
             if (IsKeyDown(KEY_UP)) lookfrom += {0, 0, 1};
@@ -63,6 +64,7 @@ public:
         CloseWindow();
         delete[] image;
     }
+
     typedef std::chrono::high_resolution_clock Time;
     typedef std::chrono::milliseconds ms;
     typedef std::chrono::duration<float> fsec;
@@ -105,29 +107,43 @@ public:
         delete[] image;
     }
 
+    void _render_montecarlo(const hittable& world, unsigned char*& image) {
+        auto t0 = Time::now();
+
+        auto render_scanline = [this, &world, image](const
+                tbb::blocked_range<int>&
+                range) {
+            for (int j = range.begin(); j < range.end(); j++)
+            {
+                for (int i = 0; i < image_width; i++)
+                {
+                    color pixel_color(0, 0, 0);
+                    for (int s_j = 0; s_j < sqrt_spp; s_j++)
+                    {
+                        for (int s_i = 0; s_i < sqrt_spp; s_i++)
+                        {
+                            ray r = get_ray_montecarlo(i, j, s_i, s_j);
+                            pixel_color += ray_color_montecarlo(r, max_depth, world);
+                        }
+                    }
+                    write_color(image, i, j, image_width, pixel_color, samples_per_pixel);
+                }
+            }
+        };
+
+        tbb::parallel_for(tbb::blocked_range<int>(0, image_height), render_scanline);
+        auto t1 = Time::now();
+        fsec fs = t1 - t0;
+        std::cout << fs.count() << "s\n";
+    }
+
     void render_montecarlo(hittable &world)
     {
         initialize();
 
         unsigned char* image = new unsigned char[image_width * image_height * 4];
 
-        for (int j = 0; j < image_height; j++)
-        {
-            std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
-            for (int i = 0; i < image_width; i++)
-            {
-                color pixel_color(0, 0, 0);
-                for (int s_j = 0; s_j < sqrt_spp; s_j++)
-                {
-                    for (int s_i = 0; s_i < sqrt_spp; s_i++)
-                    {
-                        ray r = get_ray_montecarlo(i, j, s_i, s_j);
-                        pixel_color += ray_color_montecarlo(r, max_depth, world);
-                    }
-                }
-                write_color(image, i, j, image_width, pixel_color, samples_per_pixel);
-            }
-        }
+        _render_montecarlo(world, image);
 
         stbi_write_png("output_montecarlo.png", image_width, image_height, 4, image, image_width*4);
         delete[] image;
@@ -266,7 +282,7 @@ private:
         return color_from_emission + color_from_scatter;
     }
 
-    color ray_color_montecarlo(const ray &r, int depth, hittable &world) const
+    color ray_color_montecarlo(const ray &r, int depth, const hittable &world) const
     {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if (depth <= 0)
