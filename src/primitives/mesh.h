@@ -64,7 +64,7 @@ private:
         if (!mat.diffuse_texname.empty()) {
             // checkear si la textura ya es otra usada
             shared_ptr<texture_image> text;
-            auto path_abs = this->work_dir.append(mat.diffuse_texname);
+            auto path_abs = this->work_dir / mat.diffuse_texname;
             if (this->textures.find(path_abs.string()) == this->textures.end()) {
                 text = make_shared<texture_image>(path_abs.string());
                 textures[path_abs.string()] = text;
