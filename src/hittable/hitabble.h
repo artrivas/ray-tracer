@@ -11,13 +11,13 @@ class material;
 
 class hit_record {
 public:
-    point3  p;
+    point3 p;
     vec3 normal;
     shared_ptr<material> mat;
     float t;
     bool front_face;
-    float u;
-    float v;
+    float u{};
+    float v{};
 
     void set_face_normal(const ray& r, const vec3& outward_normal) {
         // Sets the hit record normal vector.
