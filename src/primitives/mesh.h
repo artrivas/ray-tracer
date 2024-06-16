@@ -61,18 +61,19 @@ private:
         const float specularThreshold = 0.5f;  // Umbral para considerar un material como metálico
         const float shininessThreshold = 50.0f; // Umbral de brillo para considerar un material como metálico
         const float emissionThreshold = 0.1f;  // Umbral para considerar un material como emisivo
+
+        shared_ptr<texture_image> text;
+        // Check if it has an associated texture
         if (!mat.diffuse_texname.empty()) {
-            // checkear si la textura ya es otra usada
-            shared_ptr<texture_image> text;
+            // check if the texture was already loaded
             auto path_abs = this->work_dir / mat.diffuse_texname;
             if (this->textures.find(path_abs.string()) == this->textures.end()) {
                 text = make_shared<texture_image>(path_abs.string());
                 textures[path_abs.string()] = text;
             } else
                 text = textures[path_abs.string()];
-
-            return make_shared<lambertian>(text);
         }
+
         bool isLambertian = (mat.specular[0] < specularThreshold &&
                              mat.specular[1] < specularThreshold &&
                              mat.specular[2] < specularThreshold &&
@@ -90,11 +91,17 @@ private:
             return make_shared<dielectric>(mat.ior);
         }
         if (isLambertian) {
-            return make_shared<lambertian>(color(mat.diffuse[0] * mat.ambient[0], mat.diffuse[1] * mat.ambient[1], mat.diffuse[2] *
-                                                                                                                   mat.ambient[2]));
+            if (!text)
+                return make_shared<lambertian>(color(mat.diffuse[0] * mat.ambient[0], mat.diffuse[1] * mat.ambient[1], mat.diffuse[2] *
+                mat.ambient[2]));
+            else
+                return make_shared<lambertian>(text);
         } else {
-            return make_shared<metal>(color(mat.diffuse[0] * mat.ambient[0], mat.diffuse[1] * mat.ambient[1],
-                                            mat.diffuse[2] * mat.ambient[2]), mat.specular[0]);
+            if (!text)
+                return make_shared<metal>(color(mat.diffuse[0] * mat.ambient[0], mat.diffuse[1] * mat.ambient[1],
+                                            mat.diffuse[2] * mat.ambient[2]), 1 - mat.specular[0]);
+            else
+                return make_shared<metal>(text, 1 - mat.specular[0]);
         }
     }
 

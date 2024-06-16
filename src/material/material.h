@@ -30,7 +30,6 @@ public:
 
 class lambertian: public material {
 private:
-    color albedo;
     shared_ptr<texture> tex;
 public:
     lambertian(const color &albedo) : tex(make_shared<solid_color>(albedo)){};
@@ -59,17 +58,20 @@ public:
 
 class metal : public material {
 private:
-    color albedo;
+    shared_ptr<texture> tex;
     float fuzz;
 public:
-    metal(const color& albedo, float fuzz) : albedo(albedo), fuzz(fuzz < 1 ? fuzz : 1) {}
+    metal(const shared_ptr<texture>& tex, float fuzz) : tex(tex), fuzz(fuzz < 1 ? fuzz : 1) {}
+    metal(const color& col, const float& fuzz): fuzz(fuzz < 1? fuzz:1) {
+        this->tex = make_shared<solid_color>(col);
+    }
 
     bool scatter(const ray& r_in, hit_record& rec, color& attenuation, ray& scattered)
     override {
         vec3 reflected = reflect(r_in.direction(), rec.normal);
         reflected = unit_vector(reflected) + (fuzz * random_unit_vector());
         scattered = ray(rec.p + rec.normal*1e-4, reflected, r_in.time());
-        attenuation = albedo;
+        attenuation = tex->value(rec.u, rec.v, rec.p);
         return (dot(scattered.direction(), rec.normal) > 0);
     }
 
