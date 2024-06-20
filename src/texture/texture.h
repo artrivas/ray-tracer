@@ -10,7 +10,7 @@
 #include "../perlin/perlin.h"
 #include "../rtweekend.h"
 #include "../ext/stb/stb_image.h"
-
+#include "nlohmann/json.hpp"
 class texture {
 
 public:
@@ -18,7 +18,6 @@ public:
 
     virtual color value(const float& u, const float& v, const point3& p) const = 0;
 };
-
 class solid_color : public texture {
 private:
     color albedo;
@@ -101,5 +100,24 @@ public:
         stbi_image_free(imageData);
     }
 };
+
+void from_json(const json& camera, shared_ptr<texture>& t) {
+    if (camera.contains("color")) {
+        t = make_shared<solid_color>(camera["color"].get<point3>());
+    }
+    else if(camera.contains("checker")) {
+        auto scale = camera["checker"]["scale"].get<float>();
+        auto even = camera["checker"]["even"].get<point3>();
+        auto odd = camera["checker"]["odd"].get<point3>();
+        t = make_shared<checker_texture>(scale, make_shared<solid_color>(even), make_shared<solid_color>(odd));
+    }
+    else if (camera.contains("noise")) {
+        auto scale = camera["noise"]["scale"].get<float>();
+        t = make_shared<noise_texture>(scale);
+    } else if (camera.contains("image")) {
+        auto path = camera["image"]["path"].get<std::string>();
+        t = make_shared<texture_image>(path);
+    }
+}
 
 #endif //RAYTRACING_WEEKEND_TEXTURE_H

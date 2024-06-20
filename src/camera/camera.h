@@ -22,7 +22,7 @@
 
 class camera {
 public:
-    float aspect_ratio = 1.0;  // Ratio of image width over height
+    float aspect_ratio = 16/9.;  // Ratio of image width over height
     int    image_width  = 100;  // Rendered image width in pixel count
     int    samples_per_pixel = 10;   // Count of random samples for each pixel
     int    max_depth = 10;  // Maximum number of ray bounces into scene
@@ -35,6 +35,7 @@ public:
 
     float defocus_angle = 0;  // Variation angle of rays through each pixel
     float focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
+    std::string output = "output.png";
 
     void show(const hittable& world) {
         initialize();
@@ -103,7 +104,7 @@ public:
 
         std::clog<<"\rDone.        \n";
 
-        stbi_write_png("output.png", image_width, image_height, 4, image, image_width*4);
+        stbi_write_png(this->output.c_str(), image_width, image_height, 4, image, image_width*4);
         delete[] image;
     }
 
@@ -145,7 +146,7 @@ public:
 
         _render_montecarlo(world, image);
 
-        stbi_write_png("output_montecarlo.png", image_width, image_height, 4, image, image_width*4);
+        stbi_write_png(this->output.c_str(), image_width, image_height, 4, image, image_width*4);
         delete[] image;
     }
 
@@ -310,5 +311,32 @@ private:
         return color_from_emission + color_from_scatter;
     }
 };
+
+void from_json(const json& camera, struct camera& cam) {
+    if (camera.find("samples") != camera.end()) {
+        cam.samples_per_pixel = camera.at("samples").get<int>();
+    }
+    if (camera.find("depth") != camera.end()) {
+        cam.max_depth = camera.at("depth").get<int>();
+    }
+    if (camera.find("width") != camera.end()) {
+        cam.image_width = camera.at("width").get<int>();
+    }
+    if (camera.find("lookfrom") != camera.end()) {
+        cam.lookfrom = camera.at("lookfrom").get<point3>();
+    }
+    if (camera.find("lookat") != camera.end()) {
+        cam.lookat = camera.at("lookat").get<point3>();
+    }
+    if (camera.find("background") != camera.end()) {
+        cam.background = camera.at("background").get<point3>();
+    }
+    if (camera.find("vfov") != camera.end()) {
+        cam.vfov = camera.at("vfov").get<float>();
+    }
+    if (camera.find("vup") != camera.end()) {
+        cam.vup = camera.at("vup").get<point3>();
+    }
+}
 
 #endif // RAYTRACING_WEEKEND_CAMERA_H

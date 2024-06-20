@@ -6,6 +6,7 @@
 #define RAYTRACING_WEEKEND_VEC3_H
 
 #include "../rtweekend.h"
+#include "nlohmann/json.hpp"
 
 class vec3 {
 public:
@@ -67,6 +68,13 @@ public:
 
 // point3 is just an alias for vec3
 using point3 = vec3;
+
+using json = nlohmann::json;
+void from_json(const json& t, point3& ans) {
+    ans.e[0] = t["x"].get<float>();
+    ans.e[1] = t["y"].get<float>();
+    ans.e[2] = t["z"].get<float>();
+}
 
 // Vector Utility Functions
 inline std::ostream& operator<<(std::ostream& os, const vec3& v) {
