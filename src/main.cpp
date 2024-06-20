@@ -7,6 +7,8 @@
 #include "texture/texture.h"
 #include "scene/scene.h"
 
+#include "ext/json/json.hpp"
+
 void custom() {
     scene world;
     auto t = mesh("../samples/bugatti/bugatti.obj");
@@ -343,18 +345,49 @@ void background_scene() {
 //    cam.render_montecarlo(world);
 }
 
-int main() {
-    switch (1) {
-        case 1: custom();  break;
-        case 2: checkered_spheres(); break;
-        case 3: perlin(); break;
-//        case 4: quads(); break;
-        case 5:  simple_light(); break;
-//        case 6: cornell_box(); break;
-        case 7: custom3(); break;
-        case 8: custom4(); break;
-        case 9: dielectric_scene(); break;
-        case 10: custom2(); break;
-        case 11: background_scene(); break;
+void parse(const string& filename) {
+    std::ifstream f(filename);
+    auto data = json::parse(f);
+
+
+    camera cam = data["camera"].get<camera>();
+    vector<shared_ptr<texture>> sc = data["textures"].get<vector<shared_ptr<texture>>>();
+    vector<shared_ptr<material>> m;
+    for (auto& i : data["materials"]) {
+        if (i["type"] == "lambertian") {
+            m.push_back(make_shared<lambertian>(sc[i["texture"]]));
+        } else if (i["type"] == "metal") {
+            m.push_back(make_shared<metal>(sc[i["texture"]], i["fuzz"]));
+        } else if (i["type"] == "dielectric") {
+            m.push_back(make_shared<dielectric>(i["refraction"]));
+        } else if (i["type"] == "diffuse_light") {
+            m.push_back(make_shared<diffuse_light>(sc[i["texture"]]));
+        }
     }
+    scene world;
+    for (auto& i : data["objects"]) {
+        if (i["type"].get<std::string>() == "sphere") {
+            world.add_sphere(make_shared<sphere>(i["center"], i["radius"], m[i["material"]]));
+        } else if (i["type"] == "quad") {
+            world.add_quad(make_shared<quad>(i["center"], i["u"], i["v"], m[i["material"]]));
+        } else if (i["type"] == "mesh") {
+            auto t = mesh(i["path"]);
+            t.set_origin(i["center"]);
+            t.rescale(i["scale"]);
+            world.add_obj(make_shared<mesh>(t));
+        }
+    }
+    world.build();
+    if (data.find("output") != data.end()) {
+        cam.output = data["output"].get<std::string>();
+    }
+    cam.render_montecarlo(world);
+}
+
+int main(int argc, char** argv) {
+    if (argc == 2) {
+        std::string filename = argv[1];
+        parse(filename);
+    }
+    else return 1;
 }
