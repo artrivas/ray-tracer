@@ -381,7 +381,14 @@ void parse(const string& filename) {
     if (data.find("output") != data.end()) {
         cam.output = data["output"].get<std::string>();
     }
-    cam.render_montecarlo(world);
+
+    if (data["mode"]  == 0) {
+        cam.show(world);
+    } else if (data["mode"]  == 1) {
+        cam.render(world);
+    } else if (data["mode"]  == 2) {
+        cam.render_montecarlo(world);
+    }
 }
 
 int main(int argc, char** argv) {
