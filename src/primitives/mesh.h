@@ -175,8 +175,14 @@ public:
 
             auto t3u = attrib.texcoords.at(2 * triangle.vertex[2].texcoord_index);
             auto t3v = attrib.texcoords.at(2 * triangle.vertex[2].texcoord_index + 1);
+            
             rec.u = t1u * u + t2u * v + t3u * z;
             rec.v = t1v * u + t2v * v + t3v * z;
+
+            long dec_u = (long) rec.u;
+            long dec_v = (long) rec.v;
+            rec.u = (float) rec.u - dec_u;
+            rec.v = (float) rec.v - dec_v;
         }
         rec.mat = triangle.id_mat == -1? default_mat: materials.at(triangle.id_mat);
     }
