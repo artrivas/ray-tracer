@@ -1,5 +1,5 @@
  # Ray Tracer - Computer Graphics Project
-  ![Render](./images/venus.png)
+  ![Render](./images/venus.jpg)
 ### Introduction
 This project is a simple ray tracer that uses the CPU to render images. But, trying to make it parallel using TBB from Intel and the BVH from Embree to improve the performance of the ray tracer.
 
