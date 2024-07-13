@@ -84,15 +84,20 @@ public:
         }
     }
 
+    [[nodiscard]] static float gamma_to_linear(float value, float gamma = 2.2) {
+        return pow(value, 1/gamma);
+    }
+
     color value(const float& u, const float& v, const point3& p) const override {
         color c;
         const int _u = static_cast<int>(u*width);
         const int _v = static_cast<int>(height*(1 - v));
 
         const int index = (_v*this->width + _u)*this->channels;
-        c.e[0] = imageData[index] / 255.;
-        c.e[1] = imageData[index + 1] / 255.;
-        c.e[2] = imageData[index + 2] / 255.;
+        const float gamma = imageData[index + 3] / 255.;
+        c.e[0] = gamma_to_linear(imageData[index] / 255., gamma);
+        c.e[1] = gamma_to_linear(imageData[index + 1] / 255., gamma);
+        c.e[2] = gamma_to_linear(imageData[index + 2] / 255., gamma);
         return c;
     }
 
